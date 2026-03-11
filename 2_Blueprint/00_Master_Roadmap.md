@@ -12,7 +12,7 @@
 - [x] Dashboard / Directory views
 
 ## 🟢 2. Authentication & Access (COMPLETED)
-- [x] Passwordless "Magic Link" Authentication
+- [x] Admin-managed Password Authentication (Replaced Magic Links due to rate limiting)
 - [x] Admin Bypass (for Development)
 - [x] Email Resolving (Ensuring only whitelisted emails can enter)
 - [x] Redirect routing to ensure CADs land directly on their profile.

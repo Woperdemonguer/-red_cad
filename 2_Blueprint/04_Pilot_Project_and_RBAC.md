@@ -47,7 +47,7 @@ We don't want the pilot CADs starting with a blank screen. We want a "Wow" facto
 1. **The Source:** The PM provides a simple Excel/CSV file with the 3 pilot CADs containing: Name, Short Description, Logo URL, Contact Email, Territorio.
 2. **The Script:** Engineering writes a one-time Node.js script (`db_seed.js`). 
 3. **Execution:** This script talks directly to Supabase, bypassing the UI. It creates their accounts and populates the `cad_profiles` table.
-4. **The User Experience:** When the CAD coordinator logs into `http://localhost:3000/login` with their email via Magic Link, the system detects their populated profile. The Dashboard says: *"¡Hola [Nombre del CAD]! Revisa tu perfil y completa el diagnóstico."*
+4. **The User Experience:** When the CAD coordinator logs into `http://localhost:3000/login` with their assigned password, the system detects their populated profile. The Dashboard says: *"¡Hola [Nombre del CAD]! Revisa tu perfil y completa el diagnóstico."*
 
 ---
 

@@ -30,7 +30,7 @@ We have successfully implemented the internal forms. For Phase 2, we will add:
 ### 3. Authentication Flow
 #### [NEW] `app/login/page.jsx`
 - A simple, warm, and welcoming login screen.
-- CAD coordinators will log in using their email and a password (or a Magic Link sent to their email).
+- CAD coordinators will log in using their assigned fixed email and password managed by the Admin.
 
 ### 4. The Dashboard Hub
 #### [MODIFY] `app/dashboard/page.jsx` (New Navigation)

@@ -129,5 +129,4 @@ We will then build an entirely separate module at `app/(protected)/admin/page.js
 **The Engineering Plan:** 
 We handle this through **Seed Data & Onboarding Scripts**.
 Instead of asking CADs to start from zero, we (the engineering team) will write a script that takes an Excel file *you* provide (containing all 16 CADs, their emails, and what we already know about them).
-We run this script once into Supabase. It creates their accounts and populates their `cad_profiles`. 
-When the CAD coordinator logs in for the first time via Magic Link, the system says: *"Welcome! We already know you are CAD X. Please confirm this data and finish your diagnostic form."* This is called a "Claim Your Profile" flow and drastically increases adoption rates!
+We run this script once into Supabase. It creates their accounts and populates their `cad_profiles`133. When the CAD coordinator logs in for the first time with their assigned password, the system says: *"Welcome! We already know you are CAD X. Please confirm this data and finish your diagnostic form."* This is called a "Claim Your Profile" flow and drastically increases adoption rates!

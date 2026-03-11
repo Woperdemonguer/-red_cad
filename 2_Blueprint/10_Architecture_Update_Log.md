@@ -4,6 +4,23 @@
 
 ---
 
+### [2026-03-11] 🔐 Migration to Password-Based Authentication
+
+**Goal:** Overcome Supabase free-tier rate limits with Magic Links and provide administrators with explicit control over CAD access by migrating entirely to a User/Password paradigm.
+
+**Ripple Effects & Touched Files:**
+1. **Frontend Authentication (`app/login/page.jsx`):**
+   - Ripped out `signInWithOtp` and replaced it with `signInWithPassword`.
+   - Updated UI fields to request "Usuario / Correo Electrónico" and "Contraseña".
+2. **Server Actions (`app/actions/adminAuth.js`):**
+   - Authored an Admin-only Server Action to securely interface with the Supabase Admin API using the `SUPABASE_SERVICE_ROLE_KEY`. Bypasses email validation entirely.
+3. **Admin Dashboard UX (`app/(protected)/admin/page.jsx`):**
+   - Embedded a "Contraseña" modal for each CAD row, allowing the Secretaría Técnica to instantly force-assign explicit passwords to any entity.
+4. **Data Service Layer (`lib/supabaseService.js`):**
+   - Added `formService.resolveEmail(cadId)` to intelligently derive the login identity from either the entity's public contact email or the first team member's email.
+
+---
+
 ### [2026-03-11] 🏗️ Profile Expansion & Form Streamlining
 
 **Goal:** The Project Manager requested pulling specific identity/structural data (~15 questions) out of the massive `06_Form_Content.md` and placing them directly into the CAD Profile so they are visible on the Intranet. Two additional queries were recovered from the base `Formulario_Diagnostico_CAD.pdf`. 
