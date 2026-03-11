@@ -6,6 +6,20 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { MADUREZ_TOOLTIPS, blocks } from "@/config/diagnosticForm";
 
+const COLORS = {
+  forest: "#2E5339",
+  forestLight: "#3c6b4a",
+  sage: "#8BAA7C",
+  cream: "#FAFAF5",
+  sand: "#F0EDE4",
+  border: "#EBE4D5",
+  text: "#2D3748",
+  textLight: "#718096",
+  warmGray: "#7c7c72",
+  accent: "#D4A843",
+  white: "#FFFFFF"
+};
+
 function RadioQuestion({ question, value, onChange, comment, onCommentChange }) {
   // Extract otherText from saved value if it starts with "otro:"
   const [otherText, setOtherText] = useState(() => {
