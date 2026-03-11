@@ -27,14 +27,22 @@ export async function adminResetUserPassword(accessToken, targetEmail, newPasswo
             return { success: false, error: "Permiso denegado: Token inválido o ha caducado." };
         }
 
-        // Check if caller is admin
-        const { data: adminRecord } = await client
+        // 2. We have the user securely extracted from the Token. Initialize root Admin client
+        const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        });
+
+        // 3. Verify they exist in the admin tables using root privileges (since RLS might block anonymous read)
+        const { data: adminRecord } = await adminClient
             .from("admin_users_mapping")
             .select("id")
             .eq("user_email", user.email)
             .limit(1);
 
-        const { data: roleRecord } = await client
+        const { data: roleRecord } = await adminClient
             .from("user_roles")
             .select("role")
             .eq("user_id", user.id)
@@ -46,14 +54,6 @@ export async function adminResetUserPassword(accessToken, targetEmail, newPasswo
         if (!isAdmin) {
             return { success: false, error: "Permiso denegado: No tienes rol de Administrador verificado." };
         }
-
-        // 2. We are admin! Initialize Admin client with root privileges
-        const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
-        });
 
         // 3. Find if user exists
         let targetUid = null;
