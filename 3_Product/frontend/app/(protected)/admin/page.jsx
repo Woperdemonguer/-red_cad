@@ -4,13 +4,21 @@ import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle } fro
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { profileService } from "@/lib/supabaseService";
+import { profileService, formService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { KeyRound, ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, X } from "lucide-react";
+import { adminResetUserPassword } from "@/app/actions/adminAuth";
 
 export default function AdminDashboard() {
     const { isAdmin, loading: authLoading } = useAuth();
     const [cads, setCads] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Password Reset Modal State
+    const [resetModalOpen, setResetModalOpen] = useState(false);
+    const [resetTargetEmail, setResetTargetEmail] = useState("");
+    const [resetPasswordValue, setResetPasswordValue] = useState("");
+    const [isResetting, setIsResetting] = useState(false);
 
     // Fetch CAD list once auth resolves and user is admin
     useEffect(() => {
@@ -174,6 +182,13 @@ export default function AdminDashboard() {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => handleOpenResetModal(cad.id)}
+                                                className="text-sage hover:text-forest text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
+                                                title="Gestionar Acceso"
+                                            >
+                                                <KeyRound size={16} /> Contraseña
+                                            </button>
                                             <Link
                                                 href={`/profile?cad_id=${cad.id}`}
                                                 className="text-accent hover:text-forest text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
@@ -202,6 +217,65 @@ export default function AdminDashboard() {
                     </table>
                 </div>
             </div>
+
+            {/* Password Reset Modal */}
+            {resetModalOpen && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-fade-in relative">
+                        <div className="p-6 border-b border-border bg-sand/30 flex justify-between items-center">
+                            <h3 className="text-xl font-bold font-serif text-forest flex items-center gap-2">
+                                <KeyRound size={20} className="text-accent" /> Asignar Contraseña
+                            </h3>
+                            <button onClick={() => setResetModalOpen(false)} className="text-textLight hover:text-red transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            <div className="bg-sage/10 p-4 rounded-lg border border-forest/20 text-sm text-forest mb-2">
+                                Vas a forzar una nueva contraseña para la cuenta vinculada a este CAD. El CAD podrá entrar inmediatamente utilizando estos datos.
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-1">Usuario (Email Asignado)</label>
+                                <input 
+                                    type="text" 
+                                    value={resetTargetEmail} 
+                                    disabled
+                                    className="w-full px-4 py-2 bg-sand/50 border border-border rounded-lg text-text font-medium"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-1">Nueva Contraseña</label>
+                                <input 
+                                    type="text" 
+                                    value={resetPasswordValue}
+                                    onChange={(e) => setResetPasswordValue(e.target.value)}
+                                    className="w-full px-4 py-2 bg-white border border-border rounded-lg text-text focus:ring-2 focus:ring-forest outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="p-6 border-t border-border bg-sand/10 flex justify-end gap-3">
+                            <button 
+                                onClick={() => setResetModalOpen(false)}
+                                disabled={isResetting}
+                                className="px-5 py-2 text-textLight hover:text-text font-medium transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={handleConfirmResetPassword}
+                                disabled={isResetting}
+                                className="px-5 py-2 bg-forest text-white rounded-lg hover:bg-forestLight transition-colors font-medium shadow-sm disabled:opacity-50"
+                            >
+                                {isResetting ? "Guardando..." : "Asignar Accesos"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -27,22 +27,23 @@ export default function Login() {
         }
     };
 
+    const [password, setPassword] = useState("");
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage("");
 
-        const { error } = await supabase.auth.signInWithOtp({
+        const { error } = await supabase.auth.signInWithPassword({
             email,
-            options: {
-                emailRedirectTo: `${window.location.origin}/profile`,
-            },
+            password
         });
 
         if (error) {
-            setMessage("Error enviando el enlace: " + error.message);
+            setMessage("Credenciales incorrectas: " + error.message);
         } else {
-            setMessage("¡Enlace mágico enviado! Revisa tu bandeja de entrada.");
+            // Check admin status or try resolving auth to know where to redirect
+            window.location.href = "/profile"; 
         }
         setLoading(false);
     };
@@ -57,20 +58,19 @@ export default function Login() {
 
                     <div className="bg-sand/50 p-4 rounded-xl text-left border border-border">
                         <h3 className="text-forest text-sm font-semibold mb-2 flex items-center gap-2">
-                            <Mail size={16} className="text-sage" /> ¿Cómo funciona el acceso?
+                            <Mail size={16} className="text-sage" /> Instrucciones de Acceso
                         </h3>
                         <ul className="text-sm text-textLight space-y-2 list-disc pl-4 marker:text-sage">
-                            <li>Sin enredos: no necesitas recordar contraseñas.</li>
-                            <li>Escribe tu correo y te enviaremos un <strong>enlace mágico</strong>.</li>
-                            <li>Haz clic en el enlace desde tu correo para entrar directamente.</li>
-                            <li><strong>Tu progreso se guarda automáticamente.</strong> Podrás continuar el formulario en cualquier momento volviendo a solicitar un enlace.</li>
+                            <li>El acceso está restringido a las entidades miembro de la Red y a la Secretaría Técnica.</li>
+                            <li>Usa las credenciales asignadas a tu agrupación (ej. <code>tu-cad@reddecad.org</code>).</li>
+                            <li>Si has perdido la contraseña de tu CAD, contacta con la Secretaría Técnica para que te genere una nueva al instante.</li>
                         </ul>
                     </div>
                 </div>
 
                 <form onSubmit={handleLogin} className="flex flex-col gap-4">
                     <div>
-                        <label className="text-sm text-textLight mb-1 block">Correo electrónico</label>
+                        <label className="text-sm text-textLight mb-1 block">Usuario / Correo Electrónico</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-3 text-border" size={20} />
                             <input
@@ -84,12 +84,27 @@ export default function Login() {
                         </div>
                     </div>
 
+                    <div>
+                        <label className="text-sm text-textLight mb-1 block">Contraseña</label>
+                        <div className="relative">
+                            <div className="absolute left-3 top-3 text-border font-mono pointer-events-none">**</div>
+                            <input
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg outline-none focus:border-sage transition-colors text-text placeholder-textLight"
+                                placeholder={"••••••••"}
+                            />
+                        </div>
+                    </div>
+
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-forest hover:bg-forestLight text-white py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+                        className="w-full bg-forest hover:bg-forestLight text-white py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                     >
-                        {loading ? "Enviando..." : "Enviar enlace mágico"}
+                        {loading ? "Entrando..." : "Iniciar Sesión"}
                         {!loading && <ArrowRight size={18} />}
                     </button>
 
