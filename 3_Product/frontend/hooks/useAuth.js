@@ -45,34 +45,39 @@ export function useAuth() {
             const user = session.user;
             const email = user.email;
 
-            // 2. Run admin checks and CAD mapping in parallel
+            // 2. Run admin checks and CAD mapping in parallel (use limit(1) to avoid 406 network errors when empty)
             const [roleResult, adminMapResult, cadMapResult] = await Promise.all([
                 supabase
                     .from("user_roles")
                     .select("role")
                     .eq("user_id", user.id)
-                    .single(),
+                    .limit(1),
                 supabase
                     .from("admin_users_mapping")
                     .select("id")
                     .eq("user_email", email)
-                    .single(),
+                    .limit(1),
                 supabase
                     .from("cad_users_mapping")
                     .select("cad_id")
                     .eq("user_email", email)
-                    .single(),
+                    .limit(1),
             ]);
 
             if (cancelled) return;
 
+            // Extract the first item from the arrays (if exists)
+            const roleData = roleResult.data && roleResult.data.length > 0 ? roleResult.data[0] : null;
+            const adminMapData = adminMapResult.data && adminMapResult.data.length > 0 ? adminMapResult.data[0] : null;
+            const cadMapData = cadMapResult.data && cadMapResult.data.length > 0 ? cadMapResult.data[0] : null;
+
             // 3. Determine admin status (either source is sufficient)
             const isAdmin =
-                (roleResult.data?.role === "admin") ||
-                (adminMapResult.data !== null);
+                (roleData?.role === "admin") ||
+                (adminMapData !== null);
 
             // 4. Determine CAD association
-            const cadId = cadMapResult.data?.cad_id || null;
+            const cadId = cadMapData?.cad_id || null;
 
             setState({
                 user,

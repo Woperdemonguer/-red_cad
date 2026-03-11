@@ -219,14 +219,13 @@ export const formService = {
             .from("diagnostic_forms")
             .select("answers")
             .eq("user_email", email)
-            .single();
+            .limit(1);
 
-        // Not found is not an error — it means the form hasn't been started
-        if (error && error.code !== "PGRST116") {
+        if (error) {
             throw new Error(`Error cargando formulario: ${error.message}`);
         }
 
-        return data?.answers || null;
+        return data && data.length > 0 ? data[0].answers : null;
     },
 
     /**
@@ -266,9 +265,9 @@ export const formService = {
             .from("cad_profiles")
             .select("email_contacto")
             .eq("id", cadId)
-            .single();
+            .limit(1);
 
-        return profile?.email_contacto || null;
+        return profile && profile.length > 0 ? profile[0].email_contacto : null;
     },
 };
 
