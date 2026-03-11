@@ -40,6 +40,54 @@ export default function AdminDashboard() {
         fetchCads();
     }, [authLoading, isAdmin]);
 
+    const handleOpenResetModal = async (cadId) => {
+        const toastId = toast.loading("Buscando usuario vinculado...");
+        try {
+            const resolvedEmail = await formService.resolveEmail(cadId);
+            toast.dismiss(toastId);
+            
+            if (!resolvedEmail) {
+                toast.error("Este CAD no tiene un email de contacto asignado todavía.");
+                return;
+            }
+
+            setResetTargetEmail(resolvedEmail);
+            // Auto-generate a random secure-ish password pattern
+            const shortName = resolvedEmail.split('@')[0].replace(/[^a-zA-Z]/g, '');
+            setResetPasswordValue(shortName.charAt(0).toUpperCase() + shortName.slice(1) + new Date().getFullYear() + "!");
+            setResetModalOpen(true);
+        } catch (err) {
+            toast.error("Error resolviendo email: " + err.message, { id: toastId });
+        }
+    };
+
+    const handleConfirmResetPassword = async () => {
+        if (!resetPasswordValue || resetPasswordValue.length < 6) {
+            toast.error("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        const toastId = toast.loading("Asignando contraseña...");
+        setIsResetting(true);
+
+        try {
+            const { data: { session }, error: sessionErr } = await profileService.supabase.auth.getSession();
+            if (sessionErr || !session) throw new Error("No hay sesión activa de administrador.");
+
+            const result = await adminResetUserPassword(session.access_token, resetTargetEmail, resetPasswordValue);
+            
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+
+            toast.success(result.message, { id: toastId });
+            setResetModalOpen(false);
+        } catch (err) {
+            toast.error(err.message, { id: toastId });
+        }
+        setIsResetting(false);
+    };
+
     const handleCreateCad = async () => {
         const toastId = toast.loading("Creando nueva agrupación...");
         try {
