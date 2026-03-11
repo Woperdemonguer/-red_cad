@@ -8,6 +8,8 @@ import { supabase } from "@/utils/supabase";
  * This makes it easy to add error handling, caching, or swap the backend later.
  */
 
+export { supabase };
+
 // ─── Profile Service ───────────────────────────────────────────────────────────
 
 export const profileService = {
@@ -24,6 +26,31 @@ export const profileService = {
 
         if (error) throw new Error(`Error cargando perfil: ${error.message}`);
         return data;
+    },
+
+    /**
+     * Resolves the primary email associated with a CAD profile to be used as a login username.
+     * Tries the contact email first, then the first team member's email.
+     * @param {string} cadId - The id of the CAD profile
+     * @returns {string|null} - The primary email or null if none found
+     */
+    async resolveEmail(cadId) {
+        const { data, error } = await supabase
+            .from('cad_profiles')
+            .select('email_contacto, perfiles_equipo')
+            .eq('id', cadId)
+            .single();
+            
+        if (error || !data) return null;
+        
+        if (data.email_contacto) return data.email_contacto;
+        
+        if (data.perfiles_equipo && data.perfiles_equipo.length > 0) {
+            const firstEmail = data.perfiles_equipo.find(p => p.email)?.email;
+            if (firstEmail) return firstEmail;
+        }
+        
+        return null;
     },
 
     /**

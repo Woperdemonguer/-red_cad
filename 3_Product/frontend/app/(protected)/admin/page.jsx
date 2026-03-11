@@ -4,7 +4,7 @@ import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, KeyR
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { profileService, formService } from "@/lib/supabaseService";
+import { profileService, formService, supabase } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { adminResetUserPassword } from "@/app/actions/adminAuth";
 
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
         setIsResetting(true);
 
         try {
-            const { data: { session }, error: sessionErr } = await profileService.supabase.auth.getSession();
+            const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
             if (sessionErr || !session) throw new Error("No hay sesión activa de administrador.");
 
             const result = await adminResetUserPassword(session.access_token, resetTargetEmail, resetPasswordValue);
