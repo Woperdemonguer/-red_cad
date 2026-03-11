@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle } from "lucide-react";
+import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, KeyRound, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
