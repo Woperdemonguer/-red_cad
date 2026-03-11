@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-forest: #2E5339;
+  --color-forestLight: #3a6b4a;
+  --color-sage: #8BAA7C;
+  --color-cream: #FAFAF5;
+  --color-sand: #F0EDE4;
+  --color-warmGray: #6B6560;
+  --color-text: #2C2926;
+  --color-textLight: #7A756F;
+  --color-accent: #C4956A;
+  --color-border: #DDD8D0;
+  --color-red: #C45C4A;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-text);
+  font-family: 'Libre Baskerville', Georgia, serif;
+}
