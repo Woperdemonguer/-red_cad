@@ -195,7 +195,7 @@ export default function CadPublicProfile({ params }) {
                         <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
                             <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
                                 <Microscope className="text-warmGray" size={18} />
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Matriz de Madurez Técnica</h4>
+                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Autodiagnóstico de Madurez Técnica</h4>
                             </div>
                             <div className="p-6">
                                 <div className="bg-sand/10 rounded-lg border border-border p-4 text-sm divide-y divide-border">
