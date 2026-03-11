@@ -1,0 +1,63 @@
+"use client";
+import Link from 'next/link';
+import { ClipboardList, Users, ArrowRight } from 'lucide-react';
+
+export default function Dashboard() {
+
+    const modules = [
+        {
+            title: "Diagnóstico de Madurez",
+            description: "Autoevalúa el estado de tu agrupación y actualiza tus datos estructurales.",
+            icon: ClipboardList,
+            href: "/form",
+            color: "text-forest",
+            bg: "bg-forest/10"
+        },
+        {
+            title: "Directorio de CADs",
+            description: "Explora los perfiles, fortalezas y datos de las asociaciones de la red.",
+            icon: Users,
+            href: "/directory",
+            color: "text-sage",
+            bg: "bg-sage/20"
+        },
+    ];
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div>
+                <h1 className="text-3xl font-semibold text-forest tracking-tight">Bienvenido al Hub</h1>
+                <p className="text-warmGray mt-2 text-lg">El sistema nervioso digital de la Red Estatal de CAD.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {modules.map((mod, idx) => {
+                    const Icon = mod.icon;
+                    return (
+                        <Link
+                            key={idx}
+                            href={mod.href}
+                            className="group block bg-white rounded-2xl p-6 border border-border shadow-sm hover:shadow-md hover:border-sage transition-all duration-200"
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <div className={`p-3 rounded-xl ${mod.bg}`}>
+                                    <Icon size={24} className={mod.color} />
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-sand flex items-center justify-center group-hover:bg-forest group-hover:text-white text-forest transition-colors">
+                                    <ArrowRight size={16} />
+                                </div>
+                            </div>
+
+                            <h3 className="text-xl font-medium text-forest mb-2">
+                                {mod.title}
+                            </h3>
+                            <p className="text-warmGray text-sm leading-relaxed">
+                                {mod.description}
+                            </p>
+                        </Link>
+                    )
+                })}
+            </div>
+        </div>
+    );
+}
