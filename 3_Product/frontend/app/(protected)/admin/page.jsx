@@ -6,7 +6,6 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { profileService, formService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { KeyRound, ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, X } from "lucide-react";
 import { adminResetUserPassword } from "@/app/actions/adminAuth";
 
 export default function AdminDashboard() {
