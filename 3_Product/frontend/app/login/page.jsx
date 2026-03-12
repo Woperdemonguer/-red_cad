@@ -41,11 +41,35 @@ export default function Login() {
 
         if (error) {
             setMessage("Credenciales incorrectas: " + error.message);
+            setLoading(false);
         } else {
             // Check admin status or try resolving auth to know where to redirect
-            window.location.href = "/profile"; 
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: adminRecord } = await supabase
+                    .from("admin_users_mapping")
+                    .select("id")
+                    .eq("user_email", user.email)
+                    .limit(1);
+                    
+                const { data: roleRecord } = await supabase
+                    .from("user_roles")
+                    .select("role")
+                    .eq("user_id", user.id)
+                    .limit(1);
+                    
+                const isAdmin = (roleRecord && roleRecord.length > 0 && roleRecord[0].role === 'admin') || 
+                                (adminRecord && adminRecord.length > 0);
+                                
+                if (isAdmin) {
+                    window.location.href = "/admin";
+                } else {
+                    window.location.href = "/profile"; 
+                }
+            } else {
+                window.location.href = "/profile";
+            }
         }
-        setLoading(false);
     };
 
     return (
