@@ -277,101 +277,125 @@ function FormComponent() {
   }
 
   return (
-    <div className="font-sans" style={{ minHeight: "100vh", background: COLORS.cream }}>
-      <div ref={topRef} />
+    <div className="font-sans flex flex-col md:flex-row relative" style={{ minHeight: "100vh", background: COLORS.cream }}>
+      <div ref={topRef} className="absolute -top-24" /> {/* For scroll into view to leave header room on mobile */}
 
-      {/* Header */}
-      <div style={{ background: COLORS.forest, padding: "20px 24px 16px", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <div>
-              <span style={{ fontSize: 11, color: COLORS.sage, textTransform: "uppercase", letterSpacing: 2, fontFamily: "system-ui, sans-serif" }}>Red Estatal de CAD</span>
-              <h1 style={{ fontSize: 16, color: COLORS.white, margin: "4px 0 0", fontWeight: 400 }}>Formulario de diagnóstico</h1>
-            </div>
-            <span style={{ fontSize: 12, color: COLORS.sage, fontFamily: "system-ui, sans-serif" }}>
-              {currentBlock + 1} / {blocks.length}
-            </span>
+      {/* Sidebar (Desktop) / Top Nav (Mobile) */}
+      <div className="w-full md:w-72 md:h-screen md:sticky md:top-0 md:overflow-y-auto flex-shrink-0 z-20" style={{ background: COLORS.forest, borderRight: `1px solid ${COLORS.border}` }}>
+        <div style={{ padding: "24px" }}>
+          <div className="hidden md:block" style={{ marginBottom: 32 }}>
+            <span style={{ fontSize: 11, color: COLORS.sage, textTransform: "uppercase", letterSpacing: 2, fontFamily: "system-ui, sans-serif" }}>Red Estatal de CAD</span>
+            <h1 style={{ fontSize: 20, color: COLORS.white, margin: "6px 0 0", fontWeight: 600 }}>Formulario de diagnóstico</h1>
+          </div>
+          
+          <div className="md:hidden flex items-center justify-between mb-2">
+             <h1 style={{ fontSize: 16, color: COLORS.white, margin: 0, fontWeight: 500 }}>Formulario de diagnóstico</h1>
+             <span style={{ fontSize: 12, color: COLORS.sage }}>{currentBlock + 1} / {blocks.length}</span>
           </div>
 
           {/* Progress bar */}
-          <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 4, marginBottom: 8 }}>
-            <div style={{ height: "100%", width: `${progress}%`, background: COLORS.sage, borderRadius: 4, transition: "width 0.5s ease" }} />
+          <div className="hidden md:block" style={{ height: 6, background: "rgba(255,255,255,0.15)", borderRadius: 3, marginBottom: 8 }}>
+            <div style={{ height: "100%", width: `${progress}%`, background: COLORS.sage, borderRadius: 3, transition: "width 0.5s ease" }} />
+          </div>
+          <div className="hidden md:block" style={{ fontSize: 12, color: COLORS.sage, marginBottom: 32, textAlign: "right" }}>
+            {currentBlock + 1} / {blocks.length} completado
           </div>
 
-          {/* Block navigation pills */}
-          <div style={{ display: "flex", gap: 4, marginTop: 12, overflowX: "auto", paddingBottom: 4 }}>
-            {blocks.map((b, i) => (
-              <button key={i} onClick={() => setCurrentBlock(i)} style={{ flex: "0 0 auto", padding: "4px 10px", borderRadius: 12, border: "none", background: i === currentBlock ? COLORS.sage : "rgba(255,255,255,0.1)", color: i === currentBlock ? COLORS.forest : "rgba(255,255,255,0.5)", fontSize: 11, cursor: "pointer", transition: "all 0.2s", fontFamily: "system-ui, sans-serif", whiteSpace: "nowrap" }}>
-                {b.icon} {b.title}
-              </button>
+          {/* Nav List */}
+          <div className="flex overflow-x-auto md:flex-col gap-2 pb-2 md:pb-0 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {blocks.map((b, i) => {
+              const isActive = i === currentBlock;
+              return (
+                <button 
+                  key={i} 
+                  onClick={() => setCurrentBlock(i)} 
+                  className="flex items-center gap-3 text-left w-auto md:w-full flex-shrink-0"
+                  style={{ 
+                    padding: "10px 14px", 
+                    borderRadius: 12, 
+                    border: "none", 
+                    background: isActive ? COLORS.sage : "transparent", 
+                    color: isActive ? COLORS.forest : "rgba(255,255,255,0.7)", 
+                    cursor: "pointer", 
+                    transition: "all 0.2s",
+                    fontWeight: isActive ? 600 : 400
+                  }}
+                >
+                  <span style={{ fontSize: 18, opacity: isActive ? 1 : 0.8 }}>{b.icon}</span> 
+                  <span className="hidden md:inline" style={{ fontSize: 13, lineHeight: 1.3 }}>{b.title}</span>
+                  <span className="md:hidden" style={{ fontSize: 13, whiteSpace: "nowrap" }}>{b.title}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 w-full mx-auto pb-24 relative" style={{ maxWidth: 800 }}>
+        <div style={{ padding: "40px 5%" }}>
+          {/* Block intro */}
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+              <span style={{ fontSize: 32 }}>{block.icon}</span>
+              <h2 style={{ fontSize: 24, color: COLORS.forest, margin: 0, fontWeight: 700 }}>
+                {block.title}
+              </h2>
+            </div>
+            <p style={{ fontSize: 15, color: COLORS.warmGray, lineHeight: 1.7, margin: 0 }}>
+              {block.intro}
+            </p>
+          </div>
+
+          {/* Questions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+            {block.questions.map((q) => (
+              <div key={q.id} style={{ background: COLORS.white, borderRadius: 16, padding: "24px 28px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", border: `1px solid ${COLORS.border}` }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 18 }}>
+                  <span style={{ fontSize: 12, color: COLORS.sage, fontFamily: "system-ui, sans-serif", fontWeight: 700, marginTop: 2, flexShrink: 0, background: COLORS.sand, padding: "2px 6px", borderRadius: 4 }}>{q.id}</span>
+                  <p style={{ fontSize: 16, color: COLORS.text, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
+                    {q.q}
+                    {q.optional && <span style={{ fontSize: 13, color: COLORS.textLight, fontStyle: "italic", fontWeight: 400 }}> (opcional)</span>}
+                  </p>
+                </div>
+
+                {q.type === "radio" && <RadioQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
+                {q.type === "checkbox" && <CheckboxQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
+                {q.type === "textarea" && <TextQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />}
+                {q.type === "info" && <InfoQuestion question={q} />}
+                {q.type === "matrix" && <MatrixQuestion question={q} value={answers[q.id] || {}} onChange={v => setAnswer(q.id, v)} />}
+              </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 20px 120px" }}>
-        {/* Block intro */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <span style={{ fontSize: 28 }}>{block.icon}</span>
-            <h2 style={{ fontSize: 20, color: COLORS.forest, margin: 0, fontWeight: 700 }}>
-              {block.title}
-            </h2>
+        {/* Footer navigation */}
+        <div className="absolute bottom-0 left-0 right-0" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.border}`, padding: "16px 5%", zIndex: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button onClick={() => currentBlock > 0 && setCurrentBlock(currentBlock - 1)} disabled={currentBlock === 0} style={{ padding: "10px 20px", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.white, color: currentBlock === 0 ? COLORS.border : COLORS.warmGray, fontSize: 14, cursor: currentBlock === 0 ? "default" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s" }}>
+              ← Anterior
+            </button>
+
+            <span className="hidden md:inline" style={{ fontSize: 13, color: COLORS.textLight, fontFamily: "system-ui, sans-serif" }}>
+              Bloque {currentBlock + 1} de {blocks.length}
+            </span>
+
+            {currentBlock < blocks.length - 1 ? (
+              <button onClick={handleNextBlock} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.forest, color: COLORS.white, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s", opacity: saving ? 0.7 : 1 }} onMouseEnter={e => !saving && (e.target.style.background = COLORS.forestLight)} onMouseLeave={e => !saving && (e.target.style.background = COLORS.forest)}>
+                {saving ? "Guardando..." : "Siguiente →"}
+              </button>
+            ) : (
+              <button onClick={handleFinalSubmit} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.accent, color: COLORS.white, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", opacity: saving ? 0.7 : 1 }}>
+                {saving ? "Guardando..." : "Enviar ✓"}
+              </button>
+            )}
           </div>
-          <p style={{ fontSize: 14, color: COLORS.warmGray, lineHeight: 1.7, margin: 0, paddingLeft: 0 }}>
-            {block.intro}
-          </p>
-        </div>
-
-        {/* Questions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-          {block.questions.map((q) => (
-            <div key={q.id} style={{ background: COLORS.white, borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: `1px solid ${COLORS.border}` }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 14 }}>
-                <span style={{ fontSize: 11, color: COLORS.sage, fontFamily: "system-ui, sans-serif", fontWeight: 600, marginTop: 2, flexShrink: 0 }}>{q.id}</span>
-                <p style={{ fontSize: 15, color: COLORS.text, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
-                  {q.q}
-                  {q.optional && <span style={{ fontSize: 12, color: COLORS.textLight, fontStyle: "italic", fontWeight: 400 }}> (opcional)</span>}
-                </p>
-              </div>
-
-              {q.type === "radio" && <RadioQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
-              {q.type === "checkbox" && <CheckboxQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
-              {q.type === "textarea" && <TextQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />}
-              {q.type === "info" && <InfoQuestion question={q} />}
-              {q.type === "matrix" && <MatrixQuestion question={q} value={answers[q.id] || {}} onChange={v => setAnswer(q.id, v)} />}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer navigation */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: COLORS.white, borderTop: `1px solid ${COLORS.border}`, padding: "12px 20px", zIndex: 10 }}>
-        <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <button onClick={() => currentBlock > 0 && setCurrentBlock(currentBlock - 1)} disabled={currentBlock === 0} style={{ padding: "10px 20px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.white, color: currentBlock === 0 ? COLORS.border : COLORS.warmGray, fontSize: 14, cursor: currentBlock === 0 ? "default" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s" }}>
-            ← Anterior
-          </button>
-
-          <span style={{ fontSize: 12, color: COLORS.textLight, fontFamily: "system-ui, sans-serif" }}>
-            Bloque {currentBlock + 1} de {blocks.length}
-          </span>
-
-          {currentBlock < blocks.length - 1 ? (
-            <button onClick={handleNextBlock} disabled={saving} style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: COLORS.forest, color: COLORS.white, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s", opacity: saving ? 0.7 : 1 }} onMouseEnter={e => !saving && (e.target.style.background = COLORS.forestLight)} onMouseLeave={e => !saving && (e.target.style.background = COLORS.forest)}>
-              {saving ? "Guardando..." : "Siguiente →"}
-            </button>
-          ) : (
-            <button onClick={handleFinalSubmit} disabled={saving} style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: COLORS.accent, color: COLORS.white, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", opacity: saving ? 0.7 : 1 }}>
-              {saving ? "Guardando..." : "Enviar ✓"}
-            </button>
-          )}
         </div>
       </div>
 
       {/* Floating Save Button */}
       {hasUnsavedChanges && (
-        <div style={{ position: "fixed", bottom: 85, right: 24, zIndex: 50 }}>
+        <div className="fixed bottom-24 right-6 md:absolute md:bottom-24 md:right-8" style={{ zIndex: 50 }}>
           <button
             onClick={handleSaveProgress}
             disabled={saving}
@@ -381,17 +405,19 @@ function FormComponent() {
               padding: "12px 24px",
               borderRadius: "30px",
               border: "none",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
               cursor: saving ? "wait" : "pointer",
               display: "flex",
               alignItems: "center",
               gap: "8px",
               fontWeight: 600,
-              fontSize: "14px"
+              fontSize: "14px",
+              transition: "transform 0.2s",
+              transform: saving ? "scale(0.95)" : "scale(1)"
             }}
           >
             <Save size={18} />
-            {saving ? "Guardando..." : "Guardar mis cambios"}
+            {saving ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>
       )}

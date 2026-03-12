@@ -14,7 +14,7 @@ export default function Dashboard() {
             bg: "bg-sand/80"
         },
         {
-            title: "Diagnóstico de partida",
+            title: "Formulario: diagnóstico de partida",
             description: "Autoevalúa el estado de tu agrupación y actualiza tus datos estructurales.",
             icon: ClipboardList,
             href: "/form",
