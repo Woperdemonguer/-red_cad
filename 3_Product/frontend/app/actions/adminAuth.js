@@ -11,6 +11,9 @@ import { createClient } from "@supabase/supabase-js";
  * @param {string} newPassword - The new password to assign
  */
 export async function adminResetUserPassword(accessToken, targetEmail, newPassword) {
+    targetEmail = (targetEmail || "").trim();
+    newPassword = (newPassword || "").trim();
+
     try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
