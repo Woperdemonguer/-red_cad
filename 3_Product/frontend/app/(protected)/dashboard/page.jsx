@@ -1,12 +1,20 @@
 "use client";
 import Link from 'next/link';
-import { ClipboardList, Users, ArrowRight } from 'lucide-react';
+import { ClipboardList, Users, ArrowRight, UserCircle } from 'lucide-react';
 
 export default function Dashboard() {
 
     const modules = [
         {
-            title: "Diagnóstico de Madurez",
+            title: "Mi Perfil",
+            description: "Revisa los datos de tu perfil para ver que estén todos actualizados.",
+            icon: UserCircle,
+            href: "/profile",
+            color: "text-accent",
+            bg: "bg-sand/80"
+        },
+        {
+            title: "Diagnóstico de partida",
             description: "Autoevalúa el estado de tu agrupación y actualiza tus datos estructurales.",
             icon: ClipboardList,
             href: "/form",
