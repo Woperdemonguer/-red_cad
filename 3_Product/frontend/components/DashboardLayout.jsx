@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }) {
                         
                         {/* Logo and Brand */}
                         <div className="flex items-center gap-3">
-                            <img src="/giasat-logo.png" alt="" className="h-8 w-auto object-contain brightness-0 invert opacity-90" />
+                            <img src="/Logo Giasat.png" alt="Giasat Logo" className="h-8 w-auto object-contain brightness-0 invert opacity-90" />
                             <div className="flex flex-col justify-center border-l border-white/20 pl-3 ml-1">
                                 <span className="text-white font-semibold tracking-wide text-sm leading-tight">Red de CAD</span>
                                 <span className="text-sage text-[10px] uppercase tracking-widest font-medium leading-tight">Intranet</span>
