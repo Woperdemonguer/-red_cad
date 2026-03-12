@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { supabase } from "@/utils/supabase";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Mail, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -28,6 +28,7 @@ export default function Login() {
     };
 
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -113,13 +114,20 @@ export default function Login() {
                         <div className="relative">
                             <div className="absolute left-3 top-3 text-border font-mono pointer-events-none">**</div>
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg outline-none focus:border-sage transition-colors text-text placeholder-textLight"
+                                className="w-full pl-10 pr-12 py-3 border border-border rounded-lg outline-none focus:border-sage transition-colors text-text placeholder-textLight"
                                 placeholder={"••••••••"}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-3 text-textLight hover:text-forest transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
                     </div>
 
