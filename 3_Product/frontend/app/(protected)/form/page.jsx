@@ -10,13 +10,17 @@ const COLORS = {
   forest: "#2E5339",
   forestLight: "#3c6b4a",
   sage: "#8BAA7C",
-  cream: "#FAFAF5",
-  sand: "#F0EDE4",
-  border: "#EBE4D5",
-  text: "#2D3748",
+  cream: "#FFFFFF",
+  sand: "#F5F7FA",
+  border: "#E2E8F0",
+  text: "#1A202C",
   textLight: "#718096",
-  warmGray: "#7c7c72",
-  accent: "#D4A843",
+  warmGray: "#A0AEC0",
+  accent: "#E8A923",
+  accentHover: "#D49A1A",
+  accentLight: "#FEF3D1",
+  blueBg: "#D6E4F0",
+  blueBgLight: "#EBF0F7",
   white: "#FFFFFF"
 };
 
@@ -264,7 +268,7 @@ function FormComponent() {
       <div style={{ minHeight: "100vh", background: COLORS.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", maxWidth: 500, padding: 40 }}>
           <div style={{ fontSize: 64, marginBottom: 24 }}>🌿</div>
-          <h2 style={{ fontSize: 24, color: COLORS.forest, marginBottom: 16, fontWeight: 700 }}>Formulario completado</h2>
+          <h2 style={{ fontSize: 24, color: COLORS.text, marginBottom: 16, fontWeight: 700 }}>Formulario completado</h2>
           <p style={{ fontSize: 15, color: COLORS.warmGray, lineHeight: 1.7 }}>
             Gracias por dedicar este tiempo. Las respuestas ayudarán a construir una red más fuerte y mejor conectada.
           </p>
@@ -281,23 +285,23 @@ function FormComponent() {
       <div ref={topRef} className="absolute -top-20" /> {/* Scroll into view offset */}
 
       {/* Sidebar (Desktop) / Top Nav (Mobile) */}
-      <div className="w-full md:w-72 md:h-[calc(100vh-64px)] md:sticky md:top-16 md:overflow-y-auto flex-shrink-0 z-20" style={{ background: COLORS.forest, borderRight: `1px solid ${COLORS.border}` }}>
+      <div className="w-full md:w-72 md:h-[calc(100vh-64px)] md:sticky md:top-16 md:overflow-y-auto flex-shrink-0 z-20" style={{ background: COLORS.white, borderRight: `1px solid ${COLORS.border}` }}>
         <div style={{ padding: "24px" }}>
           <div className="hidden md:block" style={{ marginBottom: 32 }}>
-            <span style={{ fontSize: 11, color: COLORS.sage, textTransform: "uppercase", letterSpacing: 2, fontFamily: "system-ui, sans-serif" }}>Red Estatal de CAD</span>
-            <h1 style={{ fontSize: 20, color: COLORS.white, margin: "6px 0 0", fontWeight: 600 }}>Formulario de diagnóstico</h1>
+            <span style={{ fontSize: 11, color: COLORS.warmGray, textTransform: "uppercase", letterSpacing: 2, fontFamily: "system-ui, sans-serif" }}>Red Estatal de CAD</span>
+            <h1 style={{ fontSize: 20, color: COLORS.text, margin: "6px 0 0", fontWeight: 600 }}>Formulario de diagnóstico</h1>
           </div>
           
           <div className="md:hidden flex items-center justify-between mb-2">
-             <h1 style={{ fontSize: 16, color: COLORS.white, margin: 0, fontWeight: 500 }}>Formulario de diagnóstico</h1>
-             <span style={{ fontSize: 12, color: COLORS.sage }}>{currentBlock + 1} / {blocks.length}</span>
+             <h1 style={{ fontSize: 16, color: COLORS.text, margin: 0, fontWeight: 500 }}>Formulario de diagnóstico</h1>
+             <span style={{ fontSize: 12, color: COLORS.warmGray }}>{currentBlock + 1} / {blocks.length}</span>
           </div>
 
           {/* Progress bar */}
-          <div className="hidden md:block" style={{ height: 6, background: "rgba(255,255,255,0.15)", borderRadius: 3, marginBottom: 8 }}>
-            <div style={{ height: "100%", width: `${progress}%`, background: COLORS.sage, borderRadius: 3, transition: "width 0.5s ease" }} />
+          <div className="hidden md:block" style={{ height: 6, background: COLORS.sand, borderRadius: 3, marginBottom: 8 }}>
+            <div style={{ height: "100%", width: `${progress}%`, background: COLORS.accent, borderRadius: 3, transition: "width 0.5s ease" }} />
           </div>
-          <div className="hidden md:block" style={{ fontSize: 12, color: COLORS.sage, marginBottom: 32, textAlign: "right" }}>
+          <div className="hidden md:block" style={{ fontSize: 12, color: COLORS.warmGray, marginBottom: 32, textAlign: "right" }}>
             {currentBlock + 1} / {blocks.length} completado
           </div>
 
@@ -314,14 +318,14 @@ function FormComponent() {
                     padding: "10px 14px", 
                     borderRadius: 12, 
                     border: "none", 
-                    background: isActive ? COLORS.sage : "transparent", 
-                    color: isActive ? COLORS.forest : "rgba(255,255,255,0.7)", 
+                    background: isActive ? COLORS.accentLight : "transparent", 
+                    color: isActive ? COLORS.text : COLORS.textLight, 
                     cursor: "pointer", 
                     transition: "all 0.2s",
                     fontWeight: isActive ? 600 : 400
                   }}
                 >
-                  <span style={{ fontSize: 18, opacity: isActive ? 1 : 0.8 }}>{b.icon}</span> 
+                  <span style={{ fontSize: 18, opacity: isActive ? 1 : 0.7 }}>{b.icon}</span> 
                   <span className="hidden md:inline" style={{ fontSize: 13, lineHeight: 1.3 }}>{b.title}</span>
                   <span className="md:hidden" style={{ fontSize: 13, whiteSpace: "nowrap" }}>{b.title}</span>
                 </button>
@@ -338,7 +342,7 @@ function FormComponent() {
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
               <span style={{ fontSize: 32 }}>{block.icon}</span>
-              <h2 style={{ fontSize: 24, color: COLORS.forest, margin: 0, fontWeight: 700 }}>
+              <h2 style={{ fontSize: 24, color: COLORS.text, margin: 0, fontWeight: 700 }}>
                 {block.title}
               </h2>
             </div>
@@ -369,65 +373,58 @@ function FormComponent() {
           </div>
         </div>
 
-        {/* Footer navigation */}
-        <div className="absolute bottom-0 left-0 right-0" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.border}`, padding: "16px 5%", zIndex: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {/* Sticky Footer Navigation with integrated Save */}
+        <div className="fixed bottom-0 left-0 md:left-72 right-0" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.border}`, padding: "12px 5%", zIndex: 30, boxShadow: "0 -2px 10px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: 800, margin: "0 auto" }}>
             <button onClick={() => currentBlock > 0 && setCurrentBlock(currentBlock - 1)} disabled={currentBlock === 0} style={{ padding: "10px 20px", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.white, color: currentBlock === 0 ? COLORS.border : COLORS.warmGray, fontSize: 14, cursor: currentBlock === 0 ? "default" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s" }}>
               ← Anterior
             </button>
 
-            <span className="hidden md:inline" style={{ fontSize: 13, color: COLORS.textLight, fontFamily: "system-ui, sans-serif" }}>
-              Bloque {currentBlock + 1} de {blocks.length}
-            </span>
+            {/* Persistent Save Button */}
+            <button
+              onClick={handleSaveProgress}
+              disabled={saving || !hasUnsavedChanges}
+              style={{
+                backgroundColor: hasUnsavedChanges ? COLORS.accent : COLORS.sand,
+                color: hasUnsavedChanges ? COLORS.text : COLORS.warmGray,
+                padding: "10px 24px",
+                borderRadius: 30,
+                border: hasUnsavedChanges ? "none" : `1px solid ${COLORS.border}`,
+                cursor: saving ? "wait" : hasUnsavedChanges ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontWeight: 700,
+                fontSize: 14,
+                fontFamily: "system-ui, sans-serif",
+                transition: "all 0.3s",
+                boxShadow: hasUnsavedChanges ? "0 2px 8px rgba(232,169,35,0.3)" : "none",
+                transform: saving ? "scale(0.95)" : "scale(1)"
+              }}
+            >
+              <Save size={16} />
+              {saving ? "Guardando..." : hasUnsavedChanges ? "Guardar" : "✓ Guardado"}
+            </button>
 
             {currentBlock < blocks.length - 1 ? (
-              <button onClick={handleNextBlock} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.forest, color: COLORS.white, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s", opacity: saving ? 0.7 : 1 }} onMouseEnter={e => !saving && (e.target.style.background = COLORS.forestLight)} onMouseLeave={e => !saving && (e.target.style.background = COLORS.forest)}>
-                {saving ? "Guardando..." : "Siguiente →"}
+              <button onClick={handleNextBlock} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.accent, color: COLORS.text, fontSize: 14, fontWeight: 700, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s", opacity: saving ? 0.7 : 1 }} onMouseEnter={e => !saving && (e.target.style.background = COLORS.accentHover)} onMouseLeave={e => !saving && (e.target.style.background = COLORS.accent)}>
+                Siguiente →
               </button>
             ) : (
-              <button onClick={handleFinalSubmit} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.accent, color: COLORS.white, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", opacity: saving ? 0.7 : 1 }}>
+              <button onClick={handleFinalSubmit} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.forest, color: COLORS.white, fontSize: 14, fontWeight: 700, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", opacity: saving ? 0.7 : 1 }}>
                 {saving ? "Guardando..." : "Enviar ✓"}
               </button>
             )}
           </div>
         </div>
       </div>
-
-      {/* Floating Save Button */}
-      {hasUnsavedChanges && (
-        <div className="fixed bottom-24 right-6 md:absolute md:bottom-24 md:right-8" style={{ zIndex: 50 }}>
-          <button
-            onClick={handleSaveProgress}
-            disabled={saving}
-            style={{
-              backgroundColor: COLORS.accent,
-              color: COLORS.white,
-              padding: "12px 24px",
-              borderRadius: "30px",
-              border: "none",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-              cursor: saving ? "wait" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontWeight: 600,
-              fontSize: "14px",
-              transition: "transform 0.2s",
-              transform: saving ? "scale(0.95)" : "scale(1)"
-            }}
-          >
-            <Save size={18} />
-            {saving ? "Guardando..." : "Guardar cambios"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
 
 export default function FormularioRedCAD() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: COLORS.cream, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ color: COLORS.forest }}>Cargando formulario...</div></div>}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: COLORS.cream, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ color: COLORS.accent }}>Cargando formulario...</div></div>}>
       <FormComponent />
     </Suspense>
   );

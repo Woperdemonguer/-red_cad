@@ -89,8 +89,8 @@ export default function TeamMemberList({
 
     return (
         <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
-            <h2 className="text-xl font-bold font-serif text-forest mb-2 flex items-center gap-2">
-                <Users className="text-warmGray" size={20} /> {title}
+            <h2 className="text-xl font-bold font-serif text-text mb-2 flex items-center gap-2">
+                <Users className="text-accent" size={20} /> {title}
             </h2>
             {subtitle && (
                 <p className="text-sm text-textLight mb-6 border-b border-border pb-4">
@@ -105,10 +105,10 @@ export default function TeamMemberList({
                         {editingMemberId === member.id ? (
                             <div className="flex-1 w-full animate-fade-in">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                    <input type="text" placeholder="Nombre completo" value={editMemberData.nombre_persona || ''} onChange={e => setEditMemberData({ ...editMemberData, nombre_persona: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-forest bg-white text-sm w-full" />
-                                    <input type="email" placeholder="Correo (Login)" value={editMemberData.user_email || ''} onChange={e => setEditMemberData({ ...editMemberData, user_email: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-forest bg-white text-sm w-full" />
-                                    <input type="text" placeholder="Cargo o Rol" value={editMemberData.perfil_rol || ''} onChange={e => setEditMemberData({ ...editMemberData, perfil_rol: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-forest bg-white text-sm w-full" />
-                                    <input type="text" placeholder="Teléfono" value={editMemberData.telefono || ''} onChange={e => setEditMemberData({ ...editMemberData, telefono: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-forest bg-white text-sm w-full" />
+                                    <input type="text" placeholder="Nombre completo" value={editMemberData.nombre_persona || ''} onChange={e => setEditMemberData({ ...editMemberData, nombre_persona: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
+                                    <input type="email" placeholder="Correo (Login)" value={editMemberData.user_email || ''} onChange={e => setEditMemberData({ ...editMemberData, user_email: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
+                                    <input type="text" placeholder="Cargo o Rol" value={editMemberData.perfil_rol || ''} onChange={e => setEditMemberData({ ...editMemberData, perfil_rol: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
+                                    <input type="text" placeholder="Teléfono" value={editMemberData.telefono || ''} onChange={e => setEditMemberData({ ...editMemberData, telefono: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
                                 </div>
                                 <div className="flex items-center gap-2 justify-end">
                                     <button type="button" onClick={handleEditCancel} className="text-xs px-3 py-1.5 border border-border text-warmGray rounded-md hover:bg-sand transition-colors font-medium">Cancelar</button>
@@ -136,15 +136,15 @@ export default function TeamMemberList({
             </div>
 
             {/* Add new member form */}
-            <div className="bg-sage/10 p-5 rounded-lg border border-forest/20">
-                <h3 className="text-sm font-bold text-forest mb-4">Añadir nueva persona</h3>
+            <div className="bg-blueBgLight p-5 rounded-lg border border-border">
+                <h3 className="text-sm font-bold text-text mb-4">Añadir nueva persona</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <input type="text" placeholder="Nombre completo" value={newMember.nombre_persona} onChange={e => setNewMember({ ...newMember, nombre_persona: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-white text-sm" />
-                    <input type="email" placeholder="Correo electrónico (Login)" value={newMember.user_email} onChange={e => setNewMember({ ...newMember, user_email: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-white text-sm" />
-                    <input type="text" placeholder="Cargo o Rol" value={newMember.perfil_rol} onChange={e => setNewMember({ ...newMember, perfil_rol: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-white text-sm" />
-                    <input type="text" placeholder="Teléfono" value={newMember.telefono} onChange={e => setNewMember({ ...newMember, telefono: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-white text-sm" />
+                    <input type="text" placeholder="Nombre completo" value={newMember.nombre_persona} onChange={e => setNewMember({ ...newMember, nombre_persona: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
+                    <input type="email" placeholder="Correo electrónico (Login)" value={newMember.user_email} onChange={e => setNewMember({ ...newMember, user_email: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
+                    <input type="text" placeholder="Cargo o Rol" value={newMember.perfil_rol} onChange={e => setNewMember({ ...newMember, perfil_rol: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
+                    <input type="text" placeholder="Teléfono" value={newMember.telefono} onChange={e => setNewMember({ ...newMember, telefono: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
                 </div>
-                <button type="button" onClick={handleAdd} className="text-sm bg-forest text-white px-4 py-2 rounded-lg hover:bg-forestLight transition-colors flex items-center gap-2 w-full justify-center md:w-auto">
+                <button type="button" onClick={handleAdd} className="text-sm bg-accent text-text font-bold px-4 py-2 rounded-lg hover:bg-accentHover transition-colors flex items-center gap-2 w-full justify-center md:w-auto">
                     <PlusCircle size={16} /> {addLabel}
                 </button>
             </div>

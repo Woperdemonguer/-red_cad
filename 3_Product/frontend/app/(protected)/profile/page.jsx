@@ -190,14 +190,14 @@ function ProfileForm() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-forest mt-10">Cargando perfil...</div>;
+    if (loading) return <div className="p-8 text-center text-accent mt-10">Cargando perfil...</div>;
     if (errorMsg && !profileData?.id && !isAdminView) return <div className="p-8 max-w-2xl mx-auto mt-10 bg-red-50 text-red-700 border border-red-200 rounded-xl">{errorMsg}</div>;
 
     if (isAdminView) {
         return (
             <div className="p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
                 <div>
-                    <h1 className="text-3xl font-bold font-serif text-forest flex items-center gap-3">
+                    <h1 className="text-3xl font-bold font-serif text-text flex items-center gap-3">
                         <UserCircle className="text-accent" size={32} />
                         Administración de Equipo
                     </h1>
@@ -245,11 +245,11 @@ function ProfileForm() {
 
                 {/* --- SECCIÓN ADMIN SOLO --- */}
                 {authIsAdmin && targetCadId && (
-                    <div className="bg-sand/30 p-6 md:p-8 rounded-xl border-2 border-accent shadow-sm relative overflow-hidden">
+                    <div className="bg-blueBgLight p-6 md:p-8 rounded-xl border-2 border-accent shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 bg-accent text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                             Solo Administrador
                         </div>
-                        <h2 className="text-xl font-bold font-serif text-forest mb-6 flex items-center gap-2 border-b border-border pb-3">
+                        <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
                             <ShieldCheck className="text-accent" size={20} /> Configuración de Red (Administrador)
                         </h2>
                         
@@ -288,8 +288,8 @@ function ProfileForm() {
 
                 {/* Section 1: Identidad */}
                 <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
-                    <h2 className="text-xl font-bold font-serif text-forest mb-6 flex items-center gap-2 border-b border-border pb-3">
-                        <Building className="text-warmGray" size={20} /> Identidad y Contacto
+                    <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
+                        <Building className="text-accent" size={20} /> Identidad y Contacto
                     </h2>
 
                     <div className="mb-8 flex items-end gap-6">
@@ -302,7 +302,7 @@ function ProfileForm() {
                         </div>
                         <div className="flex-1">
                             <label className="block text-sm font-medium text-textLight mb-2">Logotipo / Imagen Representativa</label>
-                            <label className="inline-flex items-center gap-2 px-4 py-2 bg-sand text-forest border border-border rounded-lg cursor-pointer hover:bg-[#e0ddd4] transition-colors text-sm font-medium">
+                            <label className="inline-flex items-center gap-2 px-4 py-2 bg-sand text-text border border-border rounded-lg cursor-pointer hover:bg-border transition-colors text-sm font-medium">
                                 <UploadCloud size={16} />
                                 {uploadingLogo ? "Subiendo..." : "Subir Imagen"}
                                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={uploadingLogo} />
@@ -313,23 +313,23 @@ function ProfileForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Nombre Comercial</label>
-                            <input type="text" name="nombre_comercial" value={profileData.nombre_comercial || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" required />
+                            <input type="text" name="nombre_comercial" value={profileData.nombre_comercial || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" required />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Territorio (CCAA)</label>
-                            <input type="text" name="territorio" value={profileData.territorio || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" />
+                            <input type="text" name="territorio" value={profileData.territorio || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-textLight mb-2">Descripción Corta / "Bio"</label>
-                            <textarea name="descripcion_corta" value={profileData.descripcion_corta || ''} onChange={handleChange} rows="3" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" placeholder="¿Cómo describirías vuestro proyecto en 3 líneas?"></textarea>
+                            <textarea name="descripcion_corta" value={profileData.descripcion_corta || ''} onChange={handleChange} rows="3" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="¿Cómo describirías vuestro proyecto en 3 líneas?"></textarea>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Email Genérico / Público</label>
-                            <input type="email" name="email_contacto" value={profileData.email_contacto || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" />
+                            <input type="email" name="email_contacto" value={profileData.email_contacto || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Teléfono Genérico / Público</label>
-                            <input type="text" name="telefono" value={profileData.telefono || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" />
+                            <input type="text" name="telefono" value={profileData.telefono || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                     </div>
                 </div>
@@ -347,13 +347,13 @@ function ProfileForm() {
 
                 {/* Section 2: Estructura */}
                 <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
-                    <h2 className="text-xl font-bold font-serif text-forest mb-6 flex items-center gap-2 border-b border-border pb-3">
-                        <LinkIcon className="text-warmGray" size={20} /> Estructura y Dimensión
+                    <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
+                        <LinkIcon className="text-accent" size={20} /> Estructura y Dimensión
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Forma Jurídica</label>
-                            <select name="forma_juridica" value={profileData.forma_juridica || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30">
+                            <select name="forma_juridica" value={profileData.forma_juridica || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
                                 <option value="">Selecciona...</option>
                                 <option value="SAT">SAT</option>
                                 <option value="Cooperativa de primer grado">Cooperativa de primer grado</option>
@@ -365,19 +365,19 @@ function ProfileForm() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Año de Constitución</label>
-                            <input type="number" name="ano_constitucion" value={profileData.ano_constitucion || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" />
+                            <input type="number" name="ano_constitucion" value={profileData.ano_constitucion || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Nº Socias Productoras</label>
-                            <input type="number" name="num_socios_productoras" value={profileData.num_socios_productoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" />
+                            <input type="number" name="num_socios_productoras" value={profileData.num_socios_productoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Nº Personas en Plantilla</label>
-                            <input type="number" name="num_personas_trabajadoras" value={profileData.num_personas_trabajadoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" />
+                            <input type="number" name="num_personas_trabajadoras" value={profileData.num_personas_trabajadoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-textLight mb-2">Tipo de Gobernanza</label>
-                            <select name="tipo_gobernanza" value={profileData.tipo_gobernanza || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30">
+                            <select name="tipo_gobernanza" value={profileData.tipo_gobernanza || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
                                 <option value="">Selecciona...</option>
                                 <option value="Órganos de Gobierno y equipo técnico">Órganos de Gobierno y equipo técnico</option>
                                 <option value="Órganos de Gobierno + Equipo + Grupos Trabajo">Órganos de Gobierno + Equipo + Grupos Trabajo</option>
@@ -404,7 +404,7 @@ function ProfileForm() {
 
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-textLight mb-2">Propiedad de las instalaciones logísticas</label>
-                            <select name="propiedad_instalaciones" value={profileData.propiedad_instalaciones || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30">
+                            <select name="propiedad_instalaciones" value={profileData.propiedad_instalaciones || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
                                 <option value="">Selecciona...</option>
                                 <option value="Propias">Propias</option>
                                 <option value="Alquiladas">Alquiladas</option>
@@ -417,8 +417,8 @@ function ProfileForm() {
 
                 {/* Section 3: Madurez Técnica (Semáforo) */}
                 <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm overflow-hidden">
-                    <h2 className="text-xl font-bold font-serif text-forest mb-4 flex items-center gap-2 border-b border-border pb-3">
-                        <Microscope className="text-warmGray" size={20} /> Autoevaluación Técnica
+                    <h2 className="text-xl font-bold font-serif text-text mb-4 flex items-center gap-2 border-b border-border pb-3">
+                        <Microscope className="text-accent" size={20} /> Autoevaluación Técnica
                     </h2>
                     <p className="text-sm text-textLight mb-6">Evalúa de forma honesta las fortalezas y puntos de mejora de tu agrupación. Esto ayudará a conectar ofertas y demandas de intercooperación en la Red.</p>
 
@@ -472,19 +472,19 @@ function ProfileForm() {
                     <div className="mt-8 space-y-6">
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">¿En qué ámbitos considera que tiene prácticas consolidadas que podrían servir de inspiración al resto?</label>
-                            <textarea name="madurez_fortalezas" value={profileData.madurez_fortalezas || ''} onChange={handleChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30"></textarea>
+                            <textarea name="madurez_fortalezas" value={profileData.madurez_fortalezas || ''} onChange={handleChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30"></textarea>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">¿Cuáles son las mayores dificultades o cuellos de botella que limitan el crecimiento?</label>
-                            <textarea name="madurez_cuellos_botella" value={profileData.madurez_cuellos_botella || ''} onChange={handleChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30"></textarea>
+                            <textarea name="madurez_cuellos_botella" value={profileData.madurez_cuellos_botella || ''} onChange={handleChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30"></textarea>
                         </div>
                     </div>
                 </div>
 
                 {/* Section 4: Intercooperación */}
                 <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
-                    <h2 className="text-xl font-bold font-serif text-forest mb-6 flex items-center gap-2 border-b border-border pb-3">
-                        <Users className="text-warmGray" size={20} /> Intercooperación Técnica
+                    <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
+                        <Users className="text-accent" size={20} /> Intercooperación Técnica
                     </h2>
 
                     <div className="space-y-8">
@@ -545,7 +545,7 @@ function ProfileForm() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
                             <div>
                                 <label className="block text-sm font-medium text-textLight mb-2">Disposición a participar activamente</label>
-                                <select name="intercoop_disposicion" value={profileData.intercoop_disposicion || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30">
+                                <select name="intercoop_disposicion" value={profileData.intercoop_disposicion || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
                                     <option value="">Selecciona...</option>
                                     <option value="Sí, tanto asistiendo como aportando">Sí, tanto asistiendo como aportando</option>
                                     <option value="Sí, principalmente como participante">Sí, principalmente como participante</option>
@@ -555,7 +555,7 @@ function ProfileForm() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-textLight mb-2">Embajadores / Referentes en el CAD</label>
-                                <input type="text" name="intercoop_referentes" value={profileData.intercoop_referentes || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-forest bg-sand/30" placeholder="Ej: Ana (Logística), Pedro (Marketing)" />
+                                <input type="text" name="intercoop_referentes" value={profileData.intercoop_referentes || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Ana (Logística), Pedro (Marketing)" />
                             </div>
                         </div>
                     </div>
@@ -578,7 +578,7 @@ function ProfileForm() {
 
 export default function ProfilePage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center text-forest mt-10 animate-pulse">Cargando constructor de perfil...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-accent mt-10 animate-pulse">Cargando constructor de perfil...</div>}>
             <ProfileForm />
         </Suspense>
     );

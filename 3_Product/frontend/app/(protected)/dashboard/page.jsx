@@ -11,7 +11,7 @@ export default function Dashboard() {
             icon: UserCircle,
             href: "/profile",
             color: "text-accent",
-            bg: "bg-sand/80"
+            bg: "bg-accentLight"
         },
         {
             title: "Formulario: diagnóstico de partida",
@@ -19,7 +19,7 @@ export default function Dashboard() {
             icon: ClipboardList,
             href: "/form",
             color: "text-forest",
-            bg: "bg-forest/10"
+            bg: "bg-blueBgLight"
         },
         {
             title: "Directorio de CADs",
@@ -27,15 +27,15 @@ export default function Dashboard() {
             icon: Users,
             href: "/directory",
             color: "text-sage",
-            bg: "bg-sage/20"
+            bg: "bg-blueBgLight"
         },
     ];
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div>
-                <h1 className="text-3xl font-semibold text-forest tracking-tight">Bienvenido al Hub</h1>
-                <p className="text-warmGray mt-2 text-lg">El sistema nervioso digital de la Red Estatal de CAD.</p>
+                <h1 className="text-3xl font-semibold text-text tracking-tight">Te damos la bienvenida a la Red de CAD</h1>
+                <p className="text-warmGray mt-2 text-lg">Un espacio donde conectar y compartir de manera dinámica y en tiempo real.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -45,18 +45,18 @@ export default function Dashboard() {
                         <Link
                             key={idx}
                             href={mod.href}
-                            className="group block bg-white rounded-2xl p-6 border border-border shadow-sm hover:shadow-md hover:border-sage transition-all duration-200"
+                            className="group block bg-white rounded-2xl p-6 border border-border shadow-sm hover:shadow-md hover:border-accent/50 transition-all duration-200"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className={`p-3 rounded-xl ${mod.bg}`}>
                                     <Icon size={24} className={mod.color} />
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-sand flex items-center justify-center group-hover:bg-forest group-hover:text-white text-forest transition-colors">
+                                <div className="w-8 h-8 rounded-full bg-sand flex items-center justify-center group-hover:bg-accent group-hover:text-text text-textLight transition-colors">
                                     <ArrowRight size={16} />
                                 </div>
                             </div>
 
-                            <h3 className="text-xl font-medium text-forest mb-2">
+                            <h3 className="text-xl font-medium text-text mb-2">
                                 {mod.title}
                             </h3>
                             <p className="text-warmGray text-sm leading-relaxed">

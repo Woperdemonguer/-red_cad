@@ -48,7 +48,7 @@ export default function DirectoryPage() {
                 <Users size={48} className="mx-auto text-red mb-4" />
                 <h3 className="text-lg font-medium text-text mb-2">Error al cargar</h3>
                 <p className="text-textLight mb-6">{error}</p>
-                <button onClick={fetchDirectory} className="bg-forest text-white px-6 py-2 rounded-lg hover:bg-forestLight transition-colors">
+                <button onClick={fetchDirectory} className="bg-accent text-text px-6 py-2 rounded-lg hover:bg-accentHover transition-colors font-bold">
                     Reintentar
                 </button>
             </div>
@@ -59,24 +59,24 @@ export default function DirectoryPage() {
         <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold font-serif text-forest flex items-center gap-3">
+                <h1 className="text-3xl font-bold font-serif text-text flex items-center gap-3">
                     <Users className="text-accent" size={32} /> Directorio de la Red
                 </h1>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-border shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 bg-blueBgLight p-4 rounded-xl border border-border shadow-sm">
                 <input
                     type="text"
                     placeholder="Buscar por nombre o palabra clave..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-forest outline-none bg-sand/20"
+                    className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-sand/20"
                 />
                 <select
                     value={filterTerritory}
                     onChange={(e) => setFilterTerritory(e.target.value)}
-                    className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-forest outline-none bg-sand/20 min-w-[200px]"
+                    className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-sand/20 min-w-[200px]"
                 >
                     <option value="">Todos los Territorios</option>
                     {territories.map(t => (
@@ -105,7 +105,7 @@ export default function DirectoryPage() {
                                 </div>
 
                                 <div className="flex-1 text-center md:text-left">
-                                    <h3 className="text-2xl font-bold font-serif text-forest flex items-center justify-center md:justify-start gap-2 flex-wrap">
+                                    <h3 className="text-2xl font-bold font-serif text-text flex items-center justify-center md:justify-start gap-2 flex-wrap">
                                         {cad.nombre_comercial}
                                         {cad.grupo_motor === "Sí" && (
                                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-accent/20 text-accent uppercase tracking-wider border border-accent/30">
@@ -140,7 +140,7 @@ export default function DirectoryPage() {
                                     </p>
                                 </div>
 
-                                <div className="text-forest flex-shrink-0 md:self-center flex flex-col items-center">
+                                <div className="text-accent flex-shrink-0 md:self-center flex flex-col items-center">
                                     <span className="text-sm font-medium">Ver Perfil</span>
                                     <span className="mt-1">→</span>
                                 </div>

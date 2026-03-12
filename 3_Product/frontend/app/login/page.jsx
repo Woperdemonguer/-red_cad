@@ -78,12 +78,12 @@ export default function Login() {
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-border w-full max-w-md">
                 <div className="text-center mb-8">
                     <div className="text-4xl mb-4">🌿</div>
-                    <h1 className="text-2xl text-forest font-bold mb-2">Red de CAD / Intranet</h1>
+                    <h1 className="text-2xl text-text font-bold mb-2">Red de CAD / Intranet</h1>
                     <p className="text-warmGray text-sm mb-6">Acceso unificado para Coordinadoras de CAD y Secretaría Técnica.</p>
 
-                    <div className="bg-sand/50 p-4 rounded-xl text-left border border-border">
-                        <h3 className="text-forest text-sm font-semibold mb-2 flex items-center gap-2">
-                            <Mail size={16} className="text-sage" /> Instrucciones de Acceso
+                    <div className="bg-blueBgLight p-4 rounded-xl text-left border border-border">
+                        <h3 className="text-text text-sm font-semibold mb-2 flex items-center gap-2">
+                            <Mail size={16} className="text-accent" /> Instrucciones de Acceso
                         </h3>
                         <ul className="text-sm text-textLight space-y-2 list-disc pl-4 marker:text-sage">
                             <li>El acceso está restringido a las entidades miembro de la Red y a la Secretaría Técnica.</li>
@@ -124,7 +124,7 @@ export default function Login() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-3 text-textLight hover:text-forest transition-colors"
+                                className="absolute right-3 top-3 text-textLight hover:text-accent transition-colors"
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -134,7 +134,7 @@ export default function Login() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-forest hover:bg-forestLight text-white py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+                        className="w-full bg-accent hover:bg-accentHover text-text font-bold py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                     >
                         {loading ? "Entrando..." : "Iniciar Sesión"}
                         {!loading && <ArrowRight size={18} />}
@@ -152,7 +152,7 @@ export default function Login() {
                                 type="button"
                                 onClick={handleAdminFastLogin}
                                 disabled={loading}
-                                className="w-full bg-sand hover:bg-[#e0ddd4] text-forest border border-border py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full bg-sand hover:bg-border text-text border border-border py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? "Iniciando..." : "⚡ Acceso Rápido Administrador"}
                             </button>
@@ -177,7 +177,7 @@ export default function Login() {
                                     }
                                 }}
                                 disabled={loading}
-                                className="w-full bg-[#e8f0e8] hover:bg-[#d8e8d8] text-forest border border-sage py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full bg-blueBgLight hover:bg-blueBg text-text border border-border py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? "Iniciando..." : "🌱 Acceso Rápido CAD (Ekoalde)"}
                             </button>
@@ -186,7 +186,7 @@ export default function Login() {
                 </form>
 
                 {message && (
-                    <div className="mt-6 p-4 bg-cream border-l-4 border-sage rounded-r-lg text-sm text-text">
+                    <div className="mt-6 p-4 bg-blueBgLight border-l-4 border-accent rounded-r-lg text-sm text-text">
                         {message}
                     </div>
                 )}

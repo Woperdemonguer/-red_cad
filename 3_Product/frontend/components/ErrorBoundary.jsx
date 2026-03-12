@@ -25,7 +25,7 @@ export default class ErrorBoundary extends Component {
                 <div className="min-h-[50vh] flex items-center justify-center p-8">
                     <div className="text-center max-w-md">
                         <div className="text-5xl mb-6">⚠️</div>
-                        <h2 className="text-2xl font-bold font-serif text-forest mb-4">
+                        <h2 className="text-2xl font-bold font-serif text-text mb-4">
                             Algo no ha ido bien
                         </h2>
                         <p className="text-textLight mb-6">
@@ -36,7 +36,7 @@ export default class ErrorBoundary extends Component {
                                 this.setState({ hasError: false, error: null });
                                 window.location.reload();
                             }}
-                            className="bg-forest text-white px-6 py-3 rounded-lg hover:bg-forestLight transition-colors"
+                            className="bg-accent text-text px-6 py-3 rounded-lg hover:bg-accentHover transition-colors font-bold"
                         >
                             Recargar página
                         </button>

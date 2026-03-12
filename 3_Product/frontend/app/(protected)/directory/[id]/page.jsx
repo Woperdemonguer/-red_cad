@@ -32,7 +32,7 @@ export default function CadPublicProfile({ params }) {
             <div className="text-center p-12 bg-white rounded-xl border border-border max-w-2xl mx-auto mt-12">
                 <Users size={48} className="mx-auto text-border mb-4" />
                 <h3 className="text-xl font-medium text-textLight">Perfil no encontrado</h3>
-                <Link href="/directory" className="text-forest hover:underline mt-4 inline-block">Volver al Directorio</Link>
+                <Link href="/directory" className="text-accent hover:underline mt-4 inline-block">Volver al Directorio</Link>
             </div>
         );
     }
@@ -43,7 +43,7 @@ export default function CadPublicProfile({ params }) {
                 <Users size={48} className="mx-auto text-red mb-4" />
                 <h3 className="text-lg font-medium text-text mb-2">Error al cargar perfil</h3>
                 <p className="text-textLight mb-6">{error}</p>
-                <Link href="/directory" className="text-forest hover:underline">Volver al Directorio</Link>
+                <Link href="/directory" className="text-accent hover:underline">Volver al Directorio</Link>
             </div>
         );
     }
@@ -51,7 +51,7 @@ export default function CadPublicProfile({ params }) {
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8 animate-fade-in pb-20">
             {/* Back to Directory */}
-            <Link href="/directory" className="inline-flex items-center gap-2 text-textLight hover:text-forest transition-colors font-medium">
+            <Link href="/directory" className="inline-flex items-center gap-2 text-textLight hover:text-accent transition-colors font-medium">
                 <ArrowLeft size={18} /> Volver al Directorio
             </Link>
 
@@ -66,7 +66,7 @@ export default function CadPublicProfile({ params }) {
                 </div>
 
                 <div className="flex-1 text-center md:text-left">
-                    <h1 className="text-4xl font-bold font-serif text-forest mb-4">{cad.nombre_comercial}</h1>
+                    <h1 className="text-4xl font-bold font-serif text-text mb-4">{cad.nombre_comercial}</h1>
 
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-2 text-sm text-text font-medium">
                         {cad.territorio && (
@@ -93,13 +93,13 @@ export default function CadPublicProfile({ params }) {
             <div className="flex border-b border-border mt-8">
                 <button
                     onClick={() => setActiveTab("resumen")}
-                    className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "resumen" ? "border-forest text-forest bg-forest/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
+                    className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "resumen" ? "border-accent text-accent bg-accent/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
                 >
                     <LayoutGrid size={18} /> Resumen Ejecutivo
                 </button>
                 <button
                     onClick={() => setActiveTab("detalle")}
-                    className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "detalle" ? "border-forest text-forest bg-forest/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
+                    className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "detalle" ? "border-accent text-accent bg-accent/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
                 >
                     <FileText size={18} /> Perfil en Detalle
                 </button>
@@ -110,7 +110,7 @@ export default function CadPublicProfile({ params }) {
                 <div className="space-y-8 mt-8 animate-fade-in">
                     {/* About */}
                     <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm p-8">
-                        <h3 className="text-xl font-bold font-serif text-forest mb-4 flex items-center gap-2">
+                        <h3 className="text-xl font-bold font-serif text-text mb-4 flex items-center gap-2">
                             <Building size={20} className="text-warmGray" /> Sobre la Organización
                         </h3>
                         <p className="text-lg text-text leading-relaxed whitespace-pre-wrap">
@@ -128,9 +128,9 @@ export default function CadPublicProfile({ params }) {
                             { label: "Personas Trabajadoras", value: cad.num_personas_trabajadoras },
                             { label: "Gobernanza", value: cad.tipo_gobernanza },
                         ].map((stat, i) => (
-                            <div key={i} className="bg-white rounded-xl border border-border p-5 text-center shadow-sm">
+                            <div key={i} className="bg-sand rounded-xl border border-border p-5 text-center shadow-sm">
                                 <p className="text-xs text-textLight uppercase tracking-wider mb-1">{stat.label}</p>
-                                <p className="text-lg font-bold text-forest">{stat.value || "—"}</p>
+                                <p className="text-lg font-bold text-text">{stat.value || "—"}</p>
                             </div>
                         ))}
                     </div>

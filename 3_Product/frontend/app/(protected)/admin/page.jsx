@@ -135,7 +135,7 @@ export default function AdminDashboard() {
         <div className="p-8 max-w-6xl mx-auto space-y-8 animate-fade-in">
             <div className="flex items-center justify-between border-b border-border pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold font-serif text-forest flex items-center gap-3">
+                    <h1 className="text-3xl font-bold font-serif text-text flex items-center gap-3">
                         <LayoutDashboard className="text-accent" /> Panel de Control (Admin)
                     </h1>
                     <p className="text-textLight mt-2 text-lg">
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-textLight text-sm font-medium">Total CADs Registrados</p>
-                            <h3 className="text-3xl font-bold font-serif text-forest mt-2">{cads.length}</h3>
+                            <h3 className="text-3xl font-bold font-serif text-text mt-2">{cads.length}</h3>
                         </div>
                         <div className="p-3 bg-forestLight/10 rounded-lg text-forest">
                             <Users size={24} />
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-textLight text-sm font-medium">Diagnósticos Completados</p>
-                            <h3 className="text-3xl font-bold font-serif text-forest mt-2">—</h3>
+                            <h3 className="text-3xl font-bold font-serif text-text mt-2">—</h3>
                         </div>
                         <div className="p-3 bg-accent/10 rounded-lg text-accent">
                             <Settings size={24} />
@@ -170,12 +170,12 @@ export default function AdminDashboard() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-                <div className="px-6 py-5 border-b border-border bg-sand/30 flex justify-between items-center flex-wrap gap-4">
-                    <h2 className="text-xl font-bold font-serif text-forest">Directorio de Entidades</h2>
+                <div className="px-6 py-5 border-b border-border bg-blueBgLight/50 flex justify-between items-center flex-wrap gap-4">
+                    <h2 className="text-xl font-bold font-serif text-text">Directorio de Entidades</h2>
                     <div className="flex gap-3">
                         <button
                             onClick={handleCreateCad}
-                            className="text-sm bg-forest text-white px-4 py-2 rounded-lg hover:bg-forestLight transition-colors flex items-center gap-2"
+                            className="text-sm bg-accent text-text px-4 py-2 rounded-lg hover:bg-accentHover transition-colors flex items-center gap-2 font-bold"
                         >
                             <PlusCircle size={16} /> Crear Nuevo CAD
                         </button>
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
                                     <td className="px-6 py-4">
                                         <Link
                                             href={`/form?cad_id=${cad.id}`}
-                                            className="text-textLight hover:text-forest text-sm font-medium transition-colors inline-flex items-center gap-1"
+                                            className="text-textLight hover:text-accent text-sm font-medium transition-colors inline-flex items-center gap-1"
                                         >
                                             Rellenar Formulario <span>→</span>
                                         </Link>
@@ -231,14 +231,14 @@ export default function AdminDashboard() {
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => handleOpenResetModal(cad.id)}
-                                                className="text-sage hover:text-forest text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
+                                                className="text-warmGray hover:text-accent text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
                                                 title="Gestionar Acceso"
                                             >
                                                 <KeyRound size={16} /> Contraseña
                                             </button>
                                             <Link
                                                 href={`/profile?cad_id=${cad.id}`}
-                                                className="text-accent hover:text-forest text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
+                                                className="text-accent hover:text-accentHover text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
                                             >
                                                 Editar Perfil
                                             </Link>
@@ -264,13 +264,12 @@ export default function AdminDashboard() {
                     </table>
                 </div>
             </div>
-
-            {/* Password Reset Modal */}
+            {/* Password Reset Modal - Moved to root for z-index and event capture */}
             {resetModalOpen && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-fade-in relative">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-fade-in relative" onClick={(e) => e.stopPropagation()}>
                         <div className="p-6 border-b border-border bg-sand/30 flex justify-between items-center">
-                            <h3 className="text-xl font-bold font-serif text-forest flex items-center gap-2">
+                            <h3 className="text-xl font-bold font-serif text-text flex items-center gap-2">
                                 <KeyRound size={20} className="text-accent" /> Asignar Contraseña
                             </h3>
                             <button onClick={() => setResetModalOpen(false)} className="text-textLight hover:text-red transition-colors">
@@ -299,7 +298,7 @@ export default function AdminDashboard() {
                                     type="text" 
                                     value={resetPasswordValue}
                                     onChange={(e) => setResetPasswordValue(e.target.value)}
-                                    className="w-full px-4 py-2 bg-white border border-border rounded-lg text-text focus:ring-2 focus:ring-forest outline-none"
+                                    className="w-full px-4 py-2 bg-white border border-border rounded-lg text-text focus:ring-2 focus:ring-accent outline-none"
                                 />
                             </div>
                         </div>
