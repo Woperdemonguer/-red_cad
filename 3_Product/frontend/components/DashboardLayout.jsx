@@ -31,87 +31,130 @@ export default function DashboardLayout({ children }) {
     }
 
     return (
-        <div className="min-h-screen bg-sand flex">
-            {/* Mobile menu button */}
-            <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-md shadow-sm border border-border text-forest"
-            >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-
-            {/* Sidebar */}
-            <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:block
-                ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
-            `}>
-                <div className="h-full flex flex-col pt-8 pb-4">
-                    {/* Logo Area */}
-                    <div className="px-6 mb-8 text-center">
-                        <div className="flex flex-col items-center justify-center gap-3 mb-2">
-                            <img src="/giasat-logo.png" alt="" className="h-10 w-auto object-contain" />
-                            <span className="text-xl font-bold font-serif text-forest tracking-tight leading-none">Red de CAD</span>
+        <div className="min-h-screen bg-sand flex flex-col font-sans">
+            {/* Top Navbar */}
+            <header className="bg-forest border-b border-forestLight z-40 sticky top-0 shadow-sm flex-none">
+                <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                    <div className="flex h-16 items-center justify-between">
+                        
+                        {/* Logo and Brand */}
+                        <div className="flex items-center gap-3">
+                            <img src="/giasat-logo.png" alt="" className="h-8 w-auto object-contain brightness-0 invert opacity-90" />
+                            <div className="flex flex-col justify-center border-l border-white/20 pl-3 ml-1">
+                                <span className="text-white font-semibold tracking-wide text-sm leading-tight">Red de CAD</span>
+                                <span className="text-sage text-[10px] uppercase tracking-widest font-medium leading-tight">Intranet</span>
+                            </div>
                         </div>
-                        <p className="text-xs text-warmGray uppercase tracking-wider font-medium mt-1">Intranet</p>
-                    </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
-                        {navigation.map((item) => {
-                            const isActive = pathname === item.href;
-                            const Icon = item.icon;
+                        {/* Desktop Navigation */}
+                        <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center ml-8">
+                            {navigation.map((item) => {
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        className={`
+                                            px-4 py-2 rounded-md text-sm transition-all duration-200
+                                            ${isActive 
+                                                ? "bg-white text-forest font-semibold shadow-sm" 
+                                                : "text-sage hover:text-white hover:bg-white/10"}
+                                        `}
+                                    >
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
 
-                            return (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className={`
-                                        flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors
-                                        ${isActive
-                                            ? "bg-forest/10 text-forest font-medium"
-                                            : "text-textLight hover:bg-sand hover:text-forest"}
-                                    `}
-                                >
-                                    <Icon size={18} className={isActive ? "text-forest" : "text-sage"} />
-                                    {item.name}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-
-                    {/* User Area */}
-                    <div className="px-6 mt-auto border-t border-border pt-4">
-                        <div className="text-xs text-warmGray mb-3 truncate">
-                            {email}
+                        {/* Desktop User Area */}
+                        <div className="hidden lg:flex items-center gap-4 border-l border-white/20 pl-4">
+                            <div className="text-xs text-sage truncate max-w-[150px]">
+                                {email}
+                            </div>
+                            <button
+                                onClick={signOut}
+                                className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors"
+                            >
+                                <LogOut size={14} />
+                                <span>Salir</span>
+                            </button>
                         </div>
+
+                        {/* Mobile menu button */}
                         <button
-                            onClick={signOut}
-                            className="flex items-center gap-2 text-sm text-red hover:text-red/80 transition-colors w-full"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="lg:hidden p-2 rounded-md text-sage hover:text-white hover:bg-white/10 transition-colors"
                         >
-                            <LogOut size={16} />
-                            <span>Cerrar sesión</span>
+                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                     </div>
                 </div>
-            </aside>
+            </header>
 
-            {/* Main Content Area */}
-            <main className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
-                <div className="flex-1 overflow-y-auto p-4 lg:p-8">
-                    <div className="max-w-7xl mx-auto">
-                        {children}
-                    </div>
+            {/* Mobile Sidebar Overlay */}
+            <aside className={`
+                fixed inset-y-0 right-0 z-50 w-64 bg-forest border-l border-forestLight transform transition-transform duration-300 ease-in-out lg:hidden flex flex-col shadow-2xl
+                ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
+            `}>
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                    <span className="text-white font-semibold">Menú</span>
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="text-sage hover:text-white p-1">
+                        <X size={20} />
+                    </button>
                 </div>
-            </main>
+                
+                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                    {navigation.map((item) => {
+                        const isActive = pathname === item.href;
+                        const Icon = item.icon;
+                        return (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={`
+                                    flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors
+                                    ${isActive
+                                        ? "bg-white text-forest font-semibold"
+                                        : "text-sage hover:bg-white/10 hover:text-white"}
+                                `}
+                            >
+                                <Icon size={18} className={isActive ? "text-forest" : "text-sage/80"} />
+                                {item.name}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className="p-4 border-t border-white/10 bg-black/10">
+                    <div className="text-xs text-sage mb-3 truncate px-2">
+                        {email}
+                    </div>
+                    <button
+                        onClick={signOut}
+                        className="flex items-center justify-center gap-2 text-sm text-white/90 hover:text-white bg-red/20 hover:bg-red/40 py-2.5 rounded-lg transition-colors w-full"
+                    >
+                        <LogOut size={16} />
+                        <span>Cerrar sesión</span>
+                    </button>
+                </div>
+            </aside>
 
             {/* Overlay for mobile */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
+
+            {/* Main Content Area */}
+            <main className="flex-1 w-full flex flex-col">
+                <div className="flex-1 p-4 lg:p-8 w-full max-w-7xl mx-auto">
+                    {children}
+                </div>
+            </main>
         </div>
     );
 }

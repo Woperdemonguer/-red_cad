@@ -277,11 +277,11 @@ function FormComponent() {
   }
 
   return (
-    <div className="font-sans flex flex-col md:flex-row relative" style={{ minHeight: "100vh", background: COLORS.cream }}>
-      <div ref={topRef} className="absolute -top-24" /> {/* For scroll into view to leave header room on mobile */}
+    <div className="font-sans flex flex-col md:flex-row relative" style={{ minHeight: "calc(100vh - 64px)", background: COLORS.cream }}>
+      <div ref={topRef} className="absolute -top-20" /> {/* Scroll into view offset */}
 
       {/* Sidebar (Desktop) / Top Nav (Mobile) */}
-      <div className="w-full md:w-72 md:h-screen md:sticky md:top-0 md:overflow-y-auto flex-shrink-0 z-20" style={{ background: COLORS.forest, borderRight: `1px solid ${COLORS.border}` }}>
+      <div className="w-full md:w-72 md:h-[calc(100vh-64px)] md:sticky md:top-16 md:overflow-y-auto flex-shrink-0 z-20" style={{ background: COLORS.forest, borderRight: `1px solid ${COLORS.border}` }}>
         <div style={{ padding: "24px" }}>
           <div className="hidden md:block" style={{ marginBottom: 32 }}>
             <span style={{ fontSize: 11, color: COLORS.sage, textTransform: "uppercase", letterSpacing: 2, fontFamily: "system-ui, sans-serif" }}>Red Estatal de CAD</span>
