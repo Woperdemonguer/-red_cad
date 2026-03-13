@@ -1,179 +1,20 @@
 "use client";
-import { useState, useEffect, useRef, Suspense } from "react";
-import { HelpCircle, Save } from "lucide-react";
+import { useState, useEffect, useRef, Suspense, useMemo } from "react";
+import { Save, CheckCircle2, Home } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { formService } from "@/lib/supabaseService";
+import { isAnswered, countTotalQuestions, countAnsweredQuestions, shouldShowQuestion as shouldShow } from "@/lib/formUtils";
 import { MADUREZ_TOOLTIPS, blocks } from "@/config/diagnosticForm";
 
-const COLORS = {
-  forest: "#2E5339",
-  forestLight: "#3c6b4a",
-  sage: "#8BAA7C",
-  cream: "#FFFFFF",
-  sand: "#F5F7FA",
-  border: "#E2E8F0",
-  text: "#1A202C",
-  textLight: "#718096",
-  warmGray: "#A0AEC0",
-  accent: "#E8A923",
-  accentHover: "#D49A1A",
-  accentLight: "#FEF3D1",
-  blueBg: "#D6E4F0",
-  blueBgLight: "#EBF0F7",
-  white: "#FFFFFF"
-};
-
-function RadioQuestion({ question, value, onChange, comment, onCommentChange }) {
-  // Extract otherText from saved value if it starts with "otro:"
-  const [otherText, setOtherText] = useState(() => {
-    if (value?.startsWith("otro:")) return value.slice(5);
-    return "";
-  });
-  return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {question.options.map((opt, i) => (
-          <label key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "8px 12px", borderRadius: 8, background: value === opt ? COLORS.sand : "transparent", transition: "background 0.2s" }}>
-            <input type="radio" name={question.id} checked={value === opt} onChange={() => onChange(opt)} style={{ marginTop: 3, accentColor: COLORS.forest }} />
-            <span style={{ fontSize: 14, color: COLORS.text, lineHeight: 1.5 }}>{opt}</span>
-          </label>
-        ))}
-        {question.hasOther && (
-          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 12px", borderRadius: 8, background: value?.startsWith("otro:") ? COLORS.sand : "transparent" }}>
-            <input type="radio" name={question.id} checked={value?.startsWith("otro:")} onChange={() => onChange(`otro:${otherText}`)} style={{ marginTop: 3, accentColor: COLORS.forest }} />
-            <div style={{ flex: 1 }}>
-              <span style={{ fontSize: 14, color: COLORS.textLight }}>Otro:</span>
-              <input type="text" value={otherText} onChange={e => { setOtherText(e.target.value); onChange(`otro:${e.target.value}`); }} placeholder="Especificar..." style={{ display: "block", width: "100%", marginTop: 4, padding: "6px 0", border: "none", borderBottom: `1px solid ${COLORS.border}`, background: "transparent", fontSize: 14, color: COLORS.text, outline: "none" }} />
-            </div>
-          </label>
-        )}
-      </div>
-      {question.hasComment && (
-        <div style={{ marginTop: 12, paddingLeft: 12 }}>
-          <input type="text" value={comment || ""} onChange={e => onCommentChange(e.target.value)} placeholder="Comentario opcional..." style={{ width: "100%", padding: "8px 0", border: "none", borderBottom: `1px dashed ${COLORS.border}`, background: "transparent", fontSize: 13, color: COLORS.textLight, outline: "none", fontStyle: "italic" }} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CheckboxQuestion({ question, value = [], onChange, comment, onCommentChange }) {
-  // Extract otherText from saved values (look for any value starting with "otro:")
-  const [otherText, setOtherText] = useState(() => {
-    const otherVal = value.find(v => v?.startsWith("otro:"));
-    return otherVal ? otherVal.slice(5) : "";
-  });
-  const toggle = (opt) => {
-    const next = value.includes(opt) ? value.filter(v => v !== opt) : [...value, opt];
-    onChange(next);
-  };
-  return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {question.options.map((opt, i) => (
-          <label key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "6px 12px", borderRadius: 8, background: value.includes(opt) ? COLORS.sand : "transparent", transition: "background 0.2s" }}>
-            <input type="checkbox" checked={value.includes(opt)} onChange={() => toggle(opt)} style={{ marginTop: 3, accentColor: COLORS.forest }} />
-            <span style={{ fontSize: 14, color: COLORS.text, lineHeight: 1.5 }}>{opt}</span>
-          </label>
-        ))}
-        {question.hasOther && (
-          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "6px 12px" }}>
-            <input type="checkbox" checked={value.some(v => v.startsWith("otro:"))} onChange={() => { const tag = `otro:${otherText}`; toggle(tag); }} style={{ marginTop: 3, accentColor: COLORS.forest }} />
-            <div style={{ flex: 1 }}>
-              <span style={{ fontSize: 13, color: COLORS.textLight }}>Otro:</span>
-              <input type="text" value={otherText} onChange={e => setOtherText(e.target.value)} placeholder="Especificar..." style={{ display: "block", width: "100%", marginTop: 4, padding: "6px 0", border: "none", borderBottom: `1px solid ${COLORS.border}`, background: "transparent", fontSize: 14, color: COLORS.text, outline: "none" }} />
-            </div>
-          </label>
-        )}
-      </div>
-      {question.hasComment && (
-        <div style={{ marginTop: 12, paddingLeft: 12 }}>
-          <input type="text" value={comment || ""} onChange={e => onCommentChange(e.target.value)} placeholder="Comentario opcional..." style={{ width: "100%", padding: "8px 0", border: "none", borderBottom: `1px dashed ${COLORS.border}`, background: "transparent", fontSize: 13, color: COLORS.textLight, outline: "none", fontStyle: "italic" }} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TextQuestion({ question, value, onChange }) {
-  return (
-    <textarea value={value || ""} onChange={e => onChange(e.target.value)} placeholder={question.optional ? "Opcional..." : "Escribe aquí..."} rows={3} style={{ width: "100%", padding: 12, border: `1px solid ${COLORS.border}`, borderRadius: 8, background: COLORS.white, fontSize: 14, color: COLORS.text, resize: "vertical", outline: "none", fontFamily: "inherit", transition: "border 0.2s" }} onFocus={e => e.target.style.borderColor = COLORS.sage} onBlur={e => e.target.style.borderColor = COLORS.border} />
-  );
-}
-
-function InfoQuestion({ question }) {
-  return (
-    <div style={{ padding: 16, background: COLORS.sand, borderRadius: 8, borderLeft: `3px solid ${COLORS.sage}` }}>
-      <p style={{ fontSize: 13, color: COLORS.warmGray, margin: 0, lineHeight: 1.6 }}>{question.description}</p>
-    </div>
-  );
-}
-
-function MatrixQuestion({ question, value = {}, onChange }) {
-  const [activeTooltip, setActiveTooltip] = useState(null);
-
-  const handleSelect = (row, opt) => {
-    onChange({ ...value, [row]: opt });
-  };
-
-  return (
-    <div style={{ overflowX: "auto", paddingBottom: 8 }}>
-      <div style={{ minWidth: 500 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr repeat(3, 1fr)", gap: 8, marginBottom: 12, borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 8 }}>
-          <div></div>
-          {question.options.map((opt, i) => (
-            <div key={i} style={{ fontSize: 12, fontWeight: 600, color: COLORS.textLight, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 20 }}>{opt.split(" ")[0]}</span>
-              <span>{opt.substring(2)}</span>
-            </div>
-          ))}
-        </div>
-
-        {question.rows.map((row, i) => (
-          <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr repeat(3, 1fr)", gap: 8, alignItems: "center", padding: "8px 0", borderBottom: i < question.rows.length - 1 ? `1px dashed ${COLORS.border}` : "none" }}>
-
-            <div style={{ fontSize: 14, color: COLORS.text, position: "relative", display: "flex", alignItems: "center", gap: 6 }}>
-              <span>{row}</span>
-              {MADUREZ_TOOLTIPS[row] && (
-                <div
-                  onMouseEnter={() => setActiveTooltip(row)}
-                  onMouseLeave={() => setActiveTooltip(null)}
-                  onClick={() => setActiveTooltip(activeTooltip === row ? null : row)}
-                  style={{ cursor: "pointer", color: COLORS.sage }}
-                >
-                  <HelpCircle size={14} />
-                  {activeTooltip === row && (
-                    <div style={{
-                      position: "absolute", top: "100%", left: 0, zIndex: 50, marginTop: 4,
-                      background: COLORS.text, color: COLORS.white, padding: "8px 12px",
-                      borderRadius: 6, fontSize: 12, lineHeight: 1.4, width: 250,
-                      boxShadow: "0 4px 6px rgba(0,0,0,0.1)", pointerEvents: "none"
-                    }}>
-                      {MADUREZ_TOOLTIPS[row]}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {question.options.map((opt, j) => (
-              <div key={j} style={{ display: "flex", justifyContent: "center" }}>
-                <input
-                  type="radio"
-                  name={`${question.id}-${row}`}
-                  checked={value[row] === opt}
-                  onChange={() => handleSelect(row, opt)}
-                  style={{ width: 18, height: 18, accentColor: COLORS.forest, cursor: "pointer" }}
-                />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// Extracted question-type components
+import RadioQuestion from "@/components/form/RadioQuestion";
+import CheckboxQuestion from "@/components/form/CheckboxQuestion";
+import TextQuestion from "@/components/form/TextQuestion";
+import InfoQuestion from "@/components/form/InfoQuestion";
+import MatrixQuestion from "@/components/form/MatrixQuestion";
 
 function FormComponent() {
   const [currentBlock, setCurrentBlock] = useState(0);
@@ -181,6 +22,7 @@ function FormComponent() {
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState(null);
   const topRef = useRef(null);
   const searchParams = useSearchParams();
   const targetCadId = searchParams.get("cad_id");
@@ -188,7 +30,32 @@ function FormComponent() {
   const { email: userEmail, isAdmin, loading: authLoading } = useAuth();
 
   const block = blocks[currentBlock];
-  const progress = ((currentBlock) / blocks.length) * 100;
+
+  // F6 fix: Warn on unsaved changes (same pattern as profile page)
+  useEffect(() => {
+    const handler = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsavedChanges]);
+
+  // G3 fix: Calculate progress based on answered questions, not block position
+  const totalQuestions = useMemo(() => countTotalQuestions(blocks), []);
+  const answeredQuestions = useMemo(() => countAnsweredQuestions(blocks, answers), [answers]);
+  const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+
+  // G2 fix: Check if a block has any answers
+  const blockHasAnswers = (blockIndex) => {
+    const b = blocks[blockIndex];
+    return b.questions.some(q => {
+      if (q.type === "info") return false;
+      return isAnswered(answers[q.id]);
+    });
+  };
 
   // Resolve the target email and load answers once auth resolves
   useEffect(() => {
@@ -200,16 +67,20 @@ function FormComponent() {
 
         // Admin viewing a specific CAD's form
         if (targetCadId && isAdmin) {
-          const resolvedEmail = await formService.resolveEmail(targetCadId);
+          const resolvedEmail = await formService.getFormOwnerEmail(targetCadId);
           if (resolvedEmail) loadEmail = resolvedEmail;
         }
 
         setTargetEmail(loadEmail);
 
-        // Load saved answers
-        const savedAnswers = await formService.load(loadEmail);
-        if (savedAnswers) {
-          setAnswers(savedAnswers);
+        // Load saved answers (F1: check for submitted_at)
+        const savedData = await formService.load(loadEmail);
+        if (savedData) {
+          const { submitted_at, ...formAnswers } = savedData;
+          setAnswers(formAnswers);
+          if (submitted_at) {
+            setSubmitted(true);
+          }
         }
       } catch (err) {
         toast.error("Error cargando el formulario: " + err.message);
@@ -224,6 +95,7 @@ function FormComponent() {
     setSaving(true);
     try {
       await formService.save(targetEmail, currentAnswers);
+      setLastSavedAt(new Date());
     } catch (err) {
       toast.error(err.message);
     }
@@ -255,79 +127,101 @@ function FormComponent() {
   };
 
   const handleFinalSubmit = async () => {
-    if (hasUnsavedChanges) {
-      await saveAnswers(answers);
+    // F1 fix: persist submitted_at timestamp
+    const toastId = toast.loading("Enviando formulario...");
+    const submittedAnswers = { ...answers, submitted_at: new Date().toISOString() };
+    setSaving(true);
+    try {
+      await formService.save(targetEmail, submittedAnswers);
+      setSubmitted(true);
       setHasUnsavedChanges(false);
+      toast.success("¡Formulario validado y enviado con éxito!", { id: toastId });
+    } catch (err) {
+      toast.error("Error al enviar: " + err.message, { id: toastId });
     }
-    setSubmitted(true);
-    toast.success("¡Formulario validado y enviado con éxito!");
+    setSaving(false);
+  };
+
+  // F3 fix: Check if a question should be shown based on conditional logic
+  const shouldShowQuestion = (question, blockQuestions) => {
+    return shouldShow(question, blockQuestions, answers);
   };
 
   if (submitted) {
     return (
-      <div style={{ minHeight: "100vh", background: COLORS.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", maxWidth: 500, padding: 40 }}>
-          <div style={{ fontSize: 64, marginBottom: 24 }}>🌿</div>
-          <h2 style={{ fontSize: 24, color: COLORS.text, marginBottom: 16, fontWeight: 700 }}>Formulario completado</h2>
-          <p style={{ fontSize: 15, color: COLORS.warmGray, lineHeight: 1.7 }}>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-[500px] p-10">
+          <div className="text-[64px] mb-6">🌿</div>
+          <h2 className="text-2xl text-text mb-4 font-bold">Formulario completado</h2>
+          <p className="text-[15px] text-warmGray leading-relaxed">
             Gracias por dedicar este tiempo. Las respuestas ayudarán a construir una red más fuerte y mejor conectada.
           </p>
-          <p style={{ fontSize: 13, color: COLORS.textLight, marginTop: 24, fontStyle: "italic" }}>
+          <p className="text-[13px] text-textLight mt-6 italic">
             "Hay que cuidar la red para que la red nos cuide"
           </p>
+          {/* Nav fix: Add "Volver al inicio" button */}
+          <Link href="/dashboard" className="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-accent text-text font-bold rounded-xl hover:bg-accentHover transition-colors">
+            <Home size={18} /> Volver al inicio
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="font-sans flex flex-col md:flex-row relative" style={{ minHeight: "calc(100vh - 64px)", background: COLORS.cream }}>
-      <div ref={topRef} className="absolute -top-20" /> {/* Scroll into view offset */}
+    <div className="font-sans flex flex-col md:flex-row relative" style={{ minHeight: "calc(100vh - 64px)" }}>
+      <div ref={topRef} className="absolute -top-20" />
 
       {/* Sidebar (Desktop) / Top Nav (Mobile) */}
-      <div className="w-full md:w-72 md:h-[calc(100vh-64px)] md:sticky md:top-16 md:overflow-y-auto flex-shrink-0 z-20" style={{ background: COLORS.white, borderRight: `1px solid ${COLORS.border}` }}>
-        <div style={{ padding: "24px" }}>
-          <div className="hidden md:block" style={{ marginBottom: 32 }}>
-            <span style={{ fontSize: 11, color: COLORS.warmGray, textTransform: "uppercase", letterSpacing: 2, fontFamily: "system-ui, sans-serif" }}>Red Estatal de CAD</span>
-            <h1 style={{ fontSize: 20, color: COLORS.text, margin: "6px 0 0", fontWeight: 600 }}>Formulario de diagnóstico</h1>
+      <div className="w-full md:w-72 md:h-[calc(100vh-64px)] md:sticky md:top-16 md:overflow-y-auto flex-shrink-0 z-20 bg-white border-r border-border">
+        <div className="p-6">
+          <div className="hidden md:block mb-8">
+            <span className="text-[11px] text-warmGray uppercase tracking-[2px] font-sans">Red Estatal de CAD</span>
+            <h1 className="text-xl text-text mt-1.5 font-semibold">Formulario de diagnóstico</h1>
           </div>
           
           <div className="md:hidden flex items-center justify-between mb-2">
-             <h1 style={{ fontSize: 16, color: COLORS.text, margin: 0, fontWeight: 500 }}>Formulario de diagnóstico</h1>
-             <span style={{ fontSize: 12, color: COLORS.warmGray }}>{currentBlock + 1} / {blocks.length}</span>
+             <h1 className="text-base text-text font-medium">Formulario de diagnóstico</h1>
+             <span className="text-xs text-warmGray">{currentBlock + 1} / {blocks.length}</span>
           </div>
 
-          {/* Progress bar */}
-          <div className="hidden md:block" style={{ height: 6, background: COLORS.sand, borderRadius: 3, marginBottom: 8 }}>
-            <div style={{ height: "100%", width: `${progress}%`, background: COLORS.accent, borderRadius: 3, transition: "width 0.5s ease" }} />
+          {/* Progress bar — G3 fix: now tracks answered questions */}
+          <div className="hidden md:block h-1.5 bg-sand rounded-sm mb-2">
+            <div className="h-full bg-accent rounded-sm transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
-          <div className="hidden md:block" style={{ fontSize: 12, color: COLORS.warmGray, marginBottom: 32, textAlign: "right" }}>
-            {currentBlock + 1} / {blocks.length} completado
+          <div className="hidden md:block text-xs text-warmGray mb-8 text-right">
+            {answeredQuestions} / {totalQuestions} preguntas respondidas
           </div>
 
-          {/* Nav List */}
-          <div className="flex overflow-x-auto md:flex-col gap-2 pb-2 md:pb-0 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {/* Nav List — G2 fix: block completion indicators */}
+          <div className="relative flex overflow-x-auto md:flex-col gap-2 pb-2 md:pb-0" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {/* P10 fix: scroll fade for mobile */}
+            <div className="md:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
             {blocks.map((b, i) => {
               const isActive = i === currentBlock;
+              const hasAnswers = blockHasAnswers(i);
               return (
                 <button 
                   key={i} 
-                  onClick={() => setCurrentBlock(i)} 
-                  className="flex items-center gap-3 text-left w-auto md:w-full flex-shrink-0"
-                  style={{ 
-                    padding: "10px 14px", 
-                    borderRadius: 12, 
-                    border: "none", 
-                    background: isActive ? COLORS.accentLight : "transparent", 
-                    color: isActive ? COLORS.text : COLORS.textLight, 
-                    cursor: "pointer", 
-                    transition: "all 0.2s",
-                    fontWeight: isActive ? 600 : 400
-                  }}
+                  onClick={async () => {
+                    if (hasUnsavedChanges) {
+                      await saveAnswers(answers);
+                      setHasUnsavedChanges(false);
+                    }
+                    setCurrentBlock(i);
+                  }} 
+                  className={`flex items-center gap-3 text-left w-auto md:w-full flex-shrink-0 px-3.5 py-2.5 rounded-xl border-none cursor-pointer transition-all ${
+                    isActive
+                      ? "bg-accentLight text-text font-semibold"
+                      : "bg-transparent text-textLight hover:bg-sand"
+                  }`}
                 >
-                  <span style={{ fontSize: 18, opacity: isActive ? 1 : 0.7 }}>{b.icon}</span> 
-                  <span className="hidden md:inline" style={{ fontSize: 13, lineHeight: 1.3 }}>{b.title}</span>
-                  <span className="md:hidden" style={{ fontSize: 13, whiteSpace: "nowrap" }}>{b.title}</span>
+                  <span className={`text-lg ${isActive ? "opacity-100" : "opacity-70"}`}>{b.icon}</span> 
+                  <span className="hidden md:inline text-[13px] leading-tight">{b.title}</span>
+                  <span className="md:hidden text-[13px] whitespace-nowrap">{b.title}</span>
+                  {hasAnswers && !isActive && (
+                    <CheckCircle2 size={14} className="text-sage ml-auto hidden md:block flex-shrink-0" />
+                  )}
                 </button>
               )
             })}
@@ -337,82 +231,92 @@ function FormComponent() {
 
       {/* Main Content Area */}
       <div className="flex-1 w-full mx-auto pb-24 relative" style={{ maxWidth: 800 }}>
-        <div style={{ padding: "40px 5%" }}>
+        <div className="px-[5%] py-10">
           {/* Block intro */}
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-              <span style={{ fontSize: 32 }}>{block.icon}</span>
-              <h2 style={{ fontSize: 24, color: COLORS.text, margin: 0, fontWeight: 700 }}>
-                {block.title}
-              </h2>
+          <div className="mb-10">
+            <div className="flex items-center gap-3.5 mb-3">
+              <span className="text-[32px]">{block.icon}</span>
+              <h2 className="text-2xl text-text m-0 font-bold">{block.title}</h2>
             </div>
-            <p style={{ fontSize: 15, color: COLORS.warmGray, lineHeight: 1.7, margin: 0 }}>
-              {block.intro}
-            </p>
+            <p className="text-[15px] text-warmGray leading-relaxed m-0">{block.intro}</p>
           </div>
 
-          {/* Questions */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-            {block.questions.map((q) => (
-              <div key={q.id} style={{ background: COLORS.white, borderRadius: 16, padding: "24px 28px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", border: `1px solid ${COLORS.border}` }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 18 }}>
-                  <span style={{ fontSize: 12, color: COLORS.sage, fontFamily: "system-ui, sans-serif", fontWeight: 700, marginTop: 2, flexShrink: 0, background: COLORS.sand, padding: "2px 6px", borderRadius: 4 }}>{q.id}</span>
-                  <p style={{ fontSize: 16, color: COLORS.text, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
-                    {q.q}
-                    {q.optional && <span style={{ fontSize: 13, color: COLORS.textLight, fontStyle: "italic", fontWeight: 400 }}> (opcional)</span>}
-                  </p>
-                </div>
+          {/* Questions — F3 fix: conditional rendering */}
+          <div className="flex flex-col gap-8">
+            {block.questions.map((q) => {
+              // F3: Skip conditional questions whose trigger hasn't been met
+              if (!shouldShowQuestion(q, block.questions)) return null;
 
-                {q.type === "radio" && <RadioQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
-                {q.type === "checkbox" && <CheckboxQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
-                {q.type === "textarea" && <TextQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />}
-                {q.type === "info" && <InfoQuestion question={q} />}
-                {q.type === "matrix" && <MatrixQuestion question={q} value={answers[q.id] || {}} onChange={v => setAnswer(q.id, v)} />}
-              </div>
-            ))}
+              return (
+                <div key={q.id} className="bg-white rounded-2xl px-7 py-6 shadow-sm border border-border transition-all duration-300 animate-fade-in">
+                  <div className="flex items-start gap-2.5 mb-4">
+                    <span className="text-xs text-sage font-sans font-bold mt-0.5 flex-shrink-0 bg-sand px-1.5 py-0.5 rounded">{q.id}</span>
+                    <p className="text-base text-text m-0 leading-relaxed font-semibold">
+                      {q.q}
+                      {q.optional && <span className="text-[13px] text-textLight italic font-normal"> (opcional)</span>}
+                    </p>
+                  </div>
+
+                  {q.type === "radio" && <RadioQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
+                  {q.type === "checkbox" && <CheckboxQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
+                  {q.type === "textarea" && <TextQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />}
+                  {q.type === "info" && <InfoQuestion question={q} />}
+                  {q.type === "matrix" && <MatrixQuestion question={q} value={answers[q.id] || {}} onChange={v => setAnswer(q.id, v)} tooltips={MADUREZ_TOOLTIPS} />}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Sticky Footer Navigation with integrated Save */}
-        <div className="fixed bottom-0 left-0 md:left-72 right-0" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.border}`, padding: "12px 5%", zIndex: 30, boxShadow: "0 -2px 10px rgba(0,0,0,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: 800, margin: "0 auto" }}>
-            <button onClick={() => currentBlock > 0 && setCurrentBlock(currentBlock - 1)} disabled={currentBlock === 0} style={{ padding: "10px 20px", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.white, color: currentBlock === 0 ? COLORS.border : COLORS.warmGray, fontSize: 14, cursor: currentBlock === 0 ? "default" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s" }}>
+        {/* Sticky Footer Navigation */}
+        <div className="fixed bottom-0 left-0 md:left-72 right-0 bg-white border-t border-border px-[5%] py-3 z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          <div className="flex justify-between items-center max-w-[800px] mx-auto">
+            <button
+              onClick={() => currentBlock > 0 && setCurrentBlock(currentBlock - 1)}
+              disabled={currentBlock === 0}
+              className={`px-5 py-2.5 rounded-xl border border-border bg-white text-sm font-sans transition-all ${
+                currentBlock === 0 ? "text-border cursor-default" : "text-warmGray cursor-pointer hover:bg-sand"
+              }`}
+            >
               ← Anterior
             </button>
 
-            {/* Persistent Save Button */}
-            <button
-              onClick={handleSaveProgress}
-              disabled={saving || !hasUnsavedChanges}
-              style={{
-                backgroundColor: hasUnsavedChanges ? COLORS.accent : COLORS.sand,
-                color: hasUnsavedChanges ? COLORS.text : COLORS.warmGray,
-                padding: "10px 24px",
-                borderRadius: 30,
-                border: hasUnsavedChanges ? "none" : `1px solid ${COLORS.border}`,
-                cursor: saving ? "wait" : hasUnsavedChanges ? "pointer" : "default",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontWeight: 700,
-                fontSize: 14,
-                fontFamily: "system-ui, sans-serif",
-                transition: "all 0.3s",
-                boxShadow: hasUnsavedChanges ? "0 2px 8px rgba(232,169,35,0.3)" : "none",
-                transform: saving ? "scale(0.95)" : "scale(1)"
-              }}
-            >
-              <Save size={16} />
-              {saving ? "Guardando..." : hasUnsavedChanges ? "Guardar" : "✓ Guardado"}
-            </button>
+            {/* Save Button + Last Saved timestamp (P9) */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={handleSaveProgress}
+                disabled={saving || !hasUnsavedChanges}
+                className={`px-6 py-2.5 rounded-full flex items-center gap-2 font-bold text-sm font-sans transition-all ${
+                  hasUnsavedChanges
+                    ? "bg-accent text-text border-none cursor-pointer shadow-[0_2px_8px_rgba(232,169,35,0.3)]"
+                    : "bg-sand text-warmGray border border-border cursor-default"
+                } ${saving ? "cursor-wait scale-95" : "scale-100"}`}
+              >
+                <Save size={16} />
+                {saving ? "Guardando..." : hasUnsavedChanges ? "Guardar" : "✓ Guardado"}
+              </button>
+              {lastSavedAt && !hasUnsavedChanges && (
+                <span className="text-[10px] text-warmGray mt-1">
+                  Guardado a las {lastSavedAt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              )}
+            </div>
 
             {currentBlock < blocks.length - 1 ? (
-              <button onClick={handleNextBlock} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.accent, color: COLORS.text, fontSize: 14, fontWeight: 700, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", transition: "all 0.2s", opacity: saving ? 0.7 : 1 }} onMouseEnter={e => !saving && (e.target.style.background = COLORS.accentHover)} onMouseLeave={e => !saving && (e.target.style.background = COLORS.accent)}>
+              <button
+                onClick={handleNextBlock}
+                disabled={saving}
+                className="px-7 py-2.5 rounded-xl border-none bg-accent text-text text-sm font-bold cursor-pointer font-sans transition-all hover:bg-accentHover disabled:opacity-70 disabled:cursor-wait"
+              >
                 Siguiente →
               </button>
             ) : (
-              <button onClick={handleFinalSubmit} disabled={saving} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: COLORS.forest, color: COLORS.white, fontSize: 14, fontWeight: 700, cursor: saving ? "wait" : "pointer", fontFamily: "system-ui, sans-serif", opacity: saving ? 0.7 : 1 }}>
-                {saving ? "Guardando..." : "Enviar ✓"}
+              <button
+                onClick={handleFinalSubmit}
+                disabled={saving}
+                className="px-7 py-2.5 rounded-xl border-none bg-forest text-white text-sm font-bold cursor-pointer font-sans disabled:opacity-70"
+              >
+                {saving ? "Enviando..." : "Enviar ✓"}
               </button>
             )}
           </div>
@@ -424,7 +328,7 @@ function FormComponent() {
 
 export default function FormularioRedCAD() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: COLORS.cream, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ color: COLORS.accent }}>Cargando formulario...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="text-accent">Cargando formulario...</div></div>}>
       <FormComponent />
     </Suspense>
   );

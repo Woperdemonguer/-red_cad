@@ -17,16 +17,21 @@ const mockStorage = {
         getPublicUrl: vi.fn(() => ({ data: { publicUrl: 'https://cdn.example.com/logos/test.png' } })),
     })),
 };
+const mockAuth = {
+    getSession: vi.fn(),
+    signInWithPassword: vi.fn(),
+};
 
 vi.mock('@/utils/supabase', () => ({
     supabase: {
         from: (...args) => mockFrom(...args),
         storage: mockStorage,
+        auth: mockAuth,
     },
 }));
 
 // Import after mock is set up
-const { profileService, formService, teamService, storageService } = await import('@/lib/supabaseService');
+const { profileService, formService, teamService, storageService, authService } = await import('@/lib/supabaseService');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -121,17 +126,16 @@ describe('formService', () => {
     describe('load()', () => {
         it('returns answers when form exists', async () => {
             const fakeAnswers = { '1.1': 'Sí', '2.3': ['opt1', 'opt2'] };
-            mockFrom.mockReturnValue(mockChain({ data: { answers: fakeAnswers }, error: null }));
+            // Real code uses .limit(1) which returns an array, not .single()
+            mockFrom.mockReturnValue(mockChain({ data: [{ answers: fakeAnswers }], error: null }));
 
             const result = await formService.load('user@test.com');
             expect(result).toEqual(fakeAnswers);
         });
 
-        it('returns null when no form exists (PGRST116)', async () => {
-            mockFrom.mockReturnValue(mockChain({
-                data: null,
-                error: { message: 'No rows found', code: 'PGRST116' },
-            }));
+        it('returns null when no form exists (empty array)', async () => {
+            // Real code: .limit(1) returns empty array when no rows found
+            mockFrom.mockReturnValue(mockChain({ data: [], error: null }));
 
             const result = await formService.load('newuser@test.com');
             expect(result).toBeNull();
@@ -287,12 +291,12 @@ describe('profileService (extended)', () => {
 });
 
 describe('formService (extended)', () => {
-    describe('resolveEmail()', () => {
+    describe('getFormOwnerEmail()', () => {
         it('returns email from cad_users_mapping when available', async () => {
             const chain = mockChain({ data: [{ user_email: 'user@cad.org' }], error: null });
             mockFrom.mockReturnValue(chain);
 
-            const result = await formService.resolveEmail('cad-123');
+            const result = await formService.getFormOwnerEmail('cad-123');
 
             expect(mockFrom).toHaveBeenCalledWith('cad_users_mapping');
             expect(result).toBe('user@cad.org');
@@ -328,6 +332,102 @@ describe('teamService (extended)', () => {
         it('throws with Spanish error message', async () => {
             mockFrom.mockReturnValue(mockChain({ data: null, error: { message: 'Network error' } }));
             await expect(teamService.listForCad('cad-123')).rejects.toThrow('Error cargando equipo');
+        });
+    });
+});
+
+// ─── authService ─────────────────────────────────────────────────────────────
+
+describe('authService', () => {
+    describe('signIn()', () => {
+        it('returns session data on successful login', async () => {
+            const fakeData = { user: { id: 'u-1', email: 'test@cad.org' }, session: { access_token: 'tok-123' } };
+            mockAuth.signInWithPassword.mockResolvedValue({ data: fakeData, error: null });
+
+            const result = await authService.signIn('test@cad.org', 'password123');
+
+            expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
+                email: 'test@cad.org',
+                password: 'password123',
+            });
+            expect(result.user.email).toBe('test@cad.org');
+            expect(result.session.access_token).toBe('tok-123');
+        });
+
+        it('throws on invalid credentials', async () => {
+            mockAuth.signInWithPassword.mockResolvedValue({
+                data: null,
+                error: { message: 'Invalid login credentials' },
+            });
+
+            await expect(authService.signIn('bad@test.com', 'wrong'))
+                .rejects.toThrow('Invalid login credentials');
+        });
+    });
+
+    describe('getSession()', () => {
+        it('returns the current session', async () => {
+            const fakeSession = { access_token: 'tok-abc', user: { id: 'u-1' } };
+            mockAuth.getSession.mockResolvedValue({
+                data: { session: fakeSession },
+                error: null,
+            });
+
+            const result = await authService.getSession();
+            expect(result).toEqual(fakeSession);
+        });
+
+        it('throws on error', async () => {
+            mockAuth.getSession.mockResolvedValue({
+                data: { session: null },
+                error: { message: 'Session expired' },
+            });
+
+            await expect(authService.getSession()).rejects.toThrow('Error obteniendo sesión');
+        });
+    });
+
+    describe('getAccessToken()', () => {
+        it('returns the access token string when session exists', async () => {
+            mockAuth.getSession.mockResolvedValue({
+                data: { session: { access_token: 'my-token' } },
+                error: null,
+            });
+
+            const token = await authService.getAccessToken();
+            expect(token).toBe('my-token');
+        });
+
+        it('returns null when no session exists', async () => {
+            mockAuth.getSession.mockResolvedValue({
+                data: { session: null },
+                error: null,
+            });
+
+            const token = await authService.getAccessToken();
+            expect(token).toBeNull();
+        });
+    });
+});
+
+// ─── Edge cases (Round 6) ───────────────────────────────────────────────────
+
+describe('formService (edge cases)', () => {
+    describe('getFormOwnerEmail()', () => {
+        it('returns null when no mapping exists', async () => {
+            mockFrom.mockReturnValue(mockChain({ data: [], error: null }));
+
+            const result = await formService.getFormOwnerEmail('unmapped-cad');
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('save()', () => {
+        it('throws on Supabase error', async () => {
+            mockFrom.mockReturnValue(mockChain({ data: null, error: { message: 'Write failed' } }));
+
+            await expect(formService.save('user@test.com', { '1.1': 'Yes' }))
+                .rejects.toThrow('Error guardando formulario');
         });
     });
 });

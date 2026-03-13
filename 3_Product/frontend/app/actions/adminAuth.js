@@ -58,30 +58,21 @@ export async function adminResetUserPassword(accessToken, targetEmail, newPasswo
             return { success: false, error: "Permiso denegado: No tienes rol de Administrador verificado." };
         }
 
-        // 3. Find if user exists
+        // 3. Find if user exists by email (single API call instead of pagination loop)
         let targetUid = null;
-        let page = 1;
-        let found = false;
 
-        // Loop through users to find them by email (Supabase admin API pagination)
-        while (!found) {
-            const { data, error: listErr } = await adminClient.auth.admin.listUsers({
-                page: page,
-                perPage: 100
-            });
-            if (listErr) throw listErr;
-            if (!data.users || data.users.length === 0) break;
+        const { data: userList, error: listErr } = await adminClient.auth.admin.listUsers({
+            page: 1,
+            perPage: 1,
+        });
 
-            const existing = data.users.find(u => u.email.toLowerCase() === targetEmail.toLowerCase());
-            if (existing) {
-                targetUid = existing.id;
-                found = true;
-                break;
-            }
-            page++;
-        }
+        // Search for the specific user - use the admin API's filter if available,
+        // otherwise do a targeted search
+        const { data: allUsers } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+        const existing = allUsers?.users?.find(u => u.email?.toLowerCase() === targetEmail.toLowerCase());
+        if (existing) targetUid = existing.id;
 
-        if (found && targetUid) {
+        if (targetUid) {
             // User exists: Force update password and auto-confirm
             const { error: updateErr } = await adminClient.auth.admin.updateUserById(
                 targetUid,

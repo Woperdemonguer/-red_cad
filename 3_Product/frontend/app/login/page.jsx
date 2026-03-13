@@ -1,75 +1,50 @@
 "use client";
 import { useState } from "react";
-import { supabase } from "@/utils/supabase";
-import { ArrowRight, Mail, Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/supabaseService";
+import { ArrowRight, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function Login() {
+    const router = useRouter();
     const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("info"); // "info" | "error"
 
     const handleAdminFastLogin = async () => {
         const devEmail = process.env.NEXT_PUBLIC_DEV_ADMIN_EMAIL;
         const devPass = process.env.NEXT_PUBLIC_DEV_ADMIN_PASS;
-        if (!devEmail || !devPass) { setMessage("Dev admin credentials not configured."); return; }
+        if (!devEmail || !devPass) { setMessage("Dev admin credentials not configured."); setMessageType("error"); return; }
         setLoading(true);
         setMessage("Iniciando sesión como Administrador...");
-        const { error } = await supabase.auth.signInWithPassword({
-            email: devEmail,
-            password: devPass,
-        });
-
-        if (error) {
+        setMessageType("info");
+        try {
+            await authService.signIn(devEmail, devPass);
+            router.push("/dashboard");
+        } catch (error) {
             setMessage("Error: " + error.message);
+            setMessageType("error");
             setLoading(false);
-        } else {
-            window.location.href = "/admin";
         }
     };
 
-    const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
+
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage("");
+        setMessageType("info");
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password: password.trim()
-        });
-
-        if (error) {
+        try {
+            await authService.signIn(email.trim(), password);
+            router.push("/dashboard");
+        } catch (error) {
             setMessage("Credenciales incorrectas: " + error.message);
+            setMessageType("error");
             setLoading(false);
-        } else {
-            // Check admin status or try resolving auth to know where to redirect
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: adminRecord } = await supabase
-                    .from("admin_users_mapping")
-                    .select("id")
-                    .eq("user_email", user.email)
-                    .limit(1);
-                    
-                const { data: roleRecord } = await supabase
-                    .from("user_roles")
-                    .select("role")
-                    .eq("user_id", user.id)
-                    .limit(1);
-                    
-                const isAdmin = (roleRecord && roleRecord.length > 0 && roleRecord[0].role === 'admin') || 
-                                (adminRecord && adminRecord.length > 0);
-                                
-                if (isAdmin) {
-                    window.location.href = "/admin";
-                } else {
-                    window.location.href = "/profile"; 
-                }
-            } else {
-                window.location.href = "/profile";
-            }
         }
     };
 
@@ -125,6 +100,7 @@ export default function Login() {
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-3 top-3 text-textLight hover:text-accent transition-colors"
+                                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -136,8 +112,11 @@ export default function Login() {
                         disabled={loading}
                         className="w-full bg-accent hover:bg-accentHover text-text font-bold py-3 rounded-lg font-sans tracking-wide transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                     >
-                        {loading ? "Entrando..." : "Iniciar Sesión"}
-                        {!loading && <ArrowRight size={18} />}
+                        {loading ? (
+                            <><Loader2 size={18} className="animate-spin" /> Entrando...</>
+                        ) : (
+                            <><span>Iniciar Sesión</span><ArrowRight size={18} /></>
+                        )}
                     </button>
 
                     {process.env.NEXT_PUBLIC_DEV_MODE === "true" && (
@@ -162,18 +141,17 @@ export default function Login() {
                                 onClick={async () => {
                                     const devEmail = process.env.NEXT_PUBLIC_DEV_CAD_EMAIL;
                                     const devPass = process.env.NEXT_PUBLIC_DEV_CAD_PASS;
-                                    if (!devEmail || !devPass) { setMessage("Dev CAD credentials not configured."); return; }
+                                    if (!devEmail || !devPass) { setMessage("Dev CAD credentials not configured."); setMessageType("error"); return; }
                                     setLoading(true);
                                     setMessage("Iniciando sesión como usuario CAD...");
-                                    const { error } = await supabase.auth.signInWithPassword({
-                                        email: devEmail,
-                                        password: devPass,
-                                    });
-                                    if (error) {
+                                    setMessageType("info");
+                                    try {
+                                        await authService.signIn(devEmail, devPass);
+                                        router.push("/dashboard");
+                                    } catch (error) {
                                         setMessage("Error: " + error.message);
+                                        setMessageType("error");
                                         setLoading(false);
-                                    } else {
-                                        window.location.href = "/profile";
                                     }
                                 }}
                                 disabled={loading}
@@ -186,7 +164,11 @@ export default function Login() {
                 </form>
 
                 {message && (
-                    <div className="mt-6 p-4 bg-blueBgLight border-l-4 border-accent rounded-r-lg text-sm text-text">
+                    <div className={`mt-6 p-4 border-l-4 rounded-r-lg text-sm ${
+                        messageType === "error"
+                            ? "bg-red/5 border-red text-red"
+                            : "bg-blueBgLight border-accent text-text"
+                    }`}>
                         {message}
                     </div>
                 )}

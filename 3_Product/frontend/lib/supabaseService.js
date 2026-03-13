@@ -8,7 +8,8 @@ import { supabase } from "@/utils/supabase";
  * This makes it easy to add error handling, caching, or swap the backend later.
  */
 
-export { supabase };
+// NOTE: Do NOT re-export supabase. Pages must use service functions, never the raw client.
+// If you need auth session, use authService below.
 
 // ─── Profile Service ───────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ export const profileService = {
      * @param {string} cadId - The id of the CAD profile
      * @returns {string|null} - The primary email or null if none found
      */
-    async resolveEmail(cadId) {
+    async getPrimaryEmail(cadId) {
         const { data, error } = await supabase
             .from('cad_profiles')
             .select('email_contacto, perfiles_equipo')
@@ -93,9 +94,9 @@ export const profileService = {
                 territorio: profileData.territorio,
                 email_contacto: profileData.email_contacto,
                 telefono: profileData.telefono,
-                ano_constitucion: parseInt(profileData.ano_constitucion) || null,
-                num_socios_productoras: parseInt(profileData.num_socios_productoras) || null,
-                num_personas_trabajadoras: parseInt(profileData.num_personas_trabajadoras) || null,
+                ano_constitucion: parseInt(profileData.ano_constitucion, 10) || null,
+                num_socios_productoras: parseInt(profileData.num_socios_productoras, 10) || null,
+                num_personas_trabajadoras: parseInt(profileData.num_personas_trabajadoras, 10) || null,
                 forma_juridica: profileData.forma_juridica,
                 tipo_gobernanza: profileData.tipo_gobernanza,
                 madurez_evaluacion: profileData.madurez_evaluacion,
@@ -275,7 +276,7 @@ export const formService = {
      * If a cad_id is provided, tries to find the primary mapped user.
      * Falls back to the CAD's email_contacto.
      */
-    async resolveEmail(cadId) {
+    async getFormOwnerEmail(cadId) {
         // Try cad_users_mapping first
         const { data: mapping } = await supabase
             .from("cad_users_mapping")
@@ -307,7 +308,8 @@ export const storageService = {
      */
     async uploadLogo(cadId, file) {
         const fileExt = file.name.split(".").pop();
-        const fileName = `${cadId}-${Math.random()}.${fileExt}`;
+        const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now();
+        const fileName = `${cadId}-${uniqueId}.${fileExt}`;
         const filePath = `logos/${fileName}`;
 
         const { error } = await supabase.storage
@@ -321,5 +323,42 @@ export const storageService = {
             .getPublicUrl(filePath);
 
         return data.publicUrl;
+    },
+};
+
+// ─── Auth Service ───────────────────────────────────────────────────────────────
+
+export const authService = {
+    /**
+     * Get the current session (access token, user, etc.).
+     * Use this instead of importing supabase directly.
+     */
+    async getSession() {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw new Error(`Error obteniendo sesión: ${error.message}`);
+        return session;
+    },
+
+    /**
+     * Get just the access token string (for passing to server actions).
+     */
+    async getAccessToken() {
+        const session = await this.getSession();
+        return session?.access_token || null;
+    },
+
+    /**
+     * Sign in with email and password.
+     * @param {string} email
+     * @param {string} password
+     * @returns {Promise<{user: object, session: object}>}
+     */
+    async signIn(email, password) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        if (error) throw new Error(error.message);
+        return data;
     },
 };

@@ -1,8 +1,10 @@
 "use client";
 import Link from 'next/link';
-import { ClipboardList, Users, ArrowRight, UserCircle } from 'lucide-react';
+import { ClipboardList, Users, ArrowRight, UserCircle, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Dashboard() {
+    const { isAdmin, cadName } = useAuth();
 
     const modules = [
         {
@@ -31,10 +33,24 @@ export default function Dashboard() {
         },
     ];
 
+    // F2 fix: Show admin card for admin users
+    if (isAdmin) {
+        modules.push({
+            title: "Panel Admin",
+            description: "Gestiona las agrupaciones, contraseñas y la configuración del sistema.",
+            icon: ShieldCheck,
+            href: "/admin",
+            color: "text-forest",
+            bg: "bg-sage/20"
+        });
+    }
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-fade-in">
             <div>
-                <h1 className="text-3xl font-semibold text-text tracking-tight">Te damos la bienvenida a la Red de CAD</h1>
+                <h1 className="text-3xl font-semibold text-text tracking-tight">
+                    {cadName ? `Bienvenida, ${cadName}` : "Te damos la bienvenida a la Red de CAD"}
+                </h1>
                 <p className="text-warmGray mt-2 text-lg">Un espacio donde conectar y compartir de manera dinámica y en tiempo real.</p>
             </div>
 
@@ -43,7 +59,7 @@ export default function Dashboard() {
                     const Icon = mod.icon;
                     return (
                         <Link
-                            key={idx}
+                            key={mod.href}
                             href={mod.href}
                             className="group block bg-white rounded-2xl p-6 border border-border shadow-sm hover:shadow-md hover:border-accent/50 transition-all duration-200"
                         >

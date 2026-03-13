@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { profileService, teamService, storageService } from "@/lib/supabaseService";
 import TeamMemberList from "@/components/TeamMemberList";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { 
     PERFILES_EQUIPO_OPTIONS, 
     MADUREZ_CATEGORIAS, 
@@ -79,6 +80,7 @@ function ProfileForm() {
 
     useEffect(() => {
         if (authLoading) return;
+        let cancelled = false;
 
         async function loadProfile() {
             try {
@@ -98,6 +100,7 @@ function ProfileForm() {
                 // Admin with no CAD → show admin team management
                 if (!queryCadId && authIsAdmin) {
                     const team = await teamService.listAdmins();
+                    if (cancelled) return;
                     setTeamMembers(team);
                     setLoading(false);
                     return;
@@ -114,6 +117,8 @@ function ProfileForm() {
                     teamService.listForCad(queryCadId),
                 ]);
 
+                if (cancelled) return;
+
                 if (profile) {
                     setProfileData({
                         ...profile,
@@ -125,12 +130,14 @@ function ProfileForm() {
                 }
                 setTeamMembers(team);
             } catch (err) {
+                if (cancelled) return;
                 setErrorMsg(err.message);
             }
             setLoading(false);
         }
 
         loadProfile();
+        return () => { cancelled = true; };
     }, [authLoading, authIsAdmin, authCadId, targetCadId]);
 
     const handleChange = (e) => {
@@ -161,6 +168,16 @@ function ProfileForm() {
             const file = e.target.files[0];
             if (!file) return;
 
+            // P4 fix: Validate file type and size
+            if (!file.type.startsWith('image/')) {
+                toast.error('Solo se permiten archivos de imagen (JPG, PNG, SVG, WebP).');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error('El archivo es demasiado grande. Máximo 2MB.');
+                return;
+            }
+
             const publicUrl = await storageService.uploadLogo(profileData.id, file);
             setProfileData({ ...profileData, logo_url: publicUrl });
             setIsDirty(true);
@@ -181,16 +198,18 @@ function ProfileForm() {
             await profileService.update(profileData.id, profileData);
             setSaving(false);
             setSuccessMsg("Perfil público guardado correctamente.");
+            setErrorMsg("");
             setIsDirty(false);
             toast.success("Perfil guardado con éxito", { id: toastId });
         } catch (err) {
             setSaving(false);
             setErrorMsg(err.message);
+            setSuccessMsg("");
             toast.error("Ocurrió un error al guardar", { id: toastId });
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-accent mt-10">Cargando perfil...</div>;
+    if (loading) return <LoadingSpinner message="Cargando perfil..." />;
     if (errorMsg && !profileData?.id && !isAdminView) return <div className="p-8 max-w-2xl mx-auto mt-10 bg-red-50 text-red-700 border border-red-200 rounded-xl">{errorMsg}</div>;
 
     if (isAdminView) {

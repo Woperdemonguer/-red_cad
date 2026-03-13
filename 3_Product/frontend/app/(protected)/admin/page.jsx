@@ -1,14 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, KeyRound, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { profileService, formService, supabase } from "@/lib/supabaseService";
+import { profileService, formService, authService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminResetUserPassword } from "@/app/actions/adminAuth";
 
 export default function AdminDashboard() {
+    const router = useRouter();
     const { isAdmin, loading: authLoading } = useAuth();
     const [cads, setCads] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,7 +20,13 @@ export default function AdminDashboard() {
     const [resetModalOpen, setResetModalOpen] = useState(false);
     const [resetTargetEmail, setResetTargetEmail] = useState("");
     const [resetPasswordValue, setResetPasswordValue] = useState("");
+    const [resetPasswordConfirm, setResetPasswordConfirm] = useState("");
     const [isResetting, setIsResetting] = useState(false);
+
+    // Delete Confirmation Modal State
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState({ id: null, nombre: "" });
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Fetch CAD list once auth resolves and user is admin
     useEffect(() => {
@@ -43,7 +52,7 @@ export default function AdminDashboard() {
     const handleOpenResetModal = async (cadId) => {
         const toastId = toast.loading("Buscando usuario vinculado...");
         try {
-            const resolvedEmail = await formService.resolveEmail(cadId);
+            const resolvedEmail = await formService.getFormOwnerEmail(cadId);
             toast.dismiss(toastId);
             
             if (!resolvedEmail) {
@@ -66,15 +75,19 @@ export default function AdminDashboard() {
             toast.error("La contraseña debe tener al menos 6 caracteres.");
             return;
         }
+        if (resetPasswordValue !== resetPasswordConfirm) {
+            toast.error("Las contraseñas no coinciden.");
+            return;
+        }
 
         const toastId = toast.loading("Asignando contraseña...");
         setIsResetting(true);
 
         try {
-            const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
-            if (sessionErr || !session) throw new Error("No hay sesión activa de administrador.");
+            const accessToken = await authService.getAccessToken();
+            if (!accessToken) throw new Error("No hay sesión activa de administrador.");
 
-            const result = await adminResetUserPassword(session.access_token, resetTargetEmail, resetPasswordValue);
+            const result = await adminResetUserPassword(accessToken, resetTargetEmail, resetPasswordValue);
             
             if (!result.success) {
                 throw new Error(result.error);
@@ -82,6 +95,7 @@ export default function AdminDashboard() {
 
             toast.success(result.message, { id: toastId });
             setResetModalOpen(false);
+            setResetPasswordConfirm("");
         } catch (err) {
             toast.error(err.message, { id: toastId });
         }
@@ -93,23 +107,29 @@ export default function AdminDashboard() {
         try {
             const data = await profileService.create();
             toast.success("Agrupación creada con éxito", { id: toastId });
-            window.location.href = `/profile?cad_id=${data.id}`;
+            router.push(`/profile?cad_id=${data.id}`);
         } catch (err) {
             toast.error(err.message, { id: toastId });
         }
     };
 
     const handleDeleteCad = async (id, nombre) => {
-        if (!window.confirm(`¿Estás seguro de que deseas eliminar permanentemente el CAD "${nombre}"? Esta acción borrará todos sus usuarios y formularios asociados.`)) return;
+        setDeleteTarget({ id, nombre });
+        setDeleteModalOpen(true);
+    };
 
+    const confirmDeleteCad = async () => {
+        setIsDeleting(true);
         const toastId = toast.loading("Eliminando agrupación...");
         try {
-            await profileService.delete(id);
-            setCads(cads.filter(cad => cad.id !== id));
+            await profileService.delete(deleteTarget.id);
+            setCads(cads.filter(cad => cad.id !== deleteTarget.id));
             toast.success("Agrupación eliminada", { id: toastId });
+            setDeleteModalOpen(false);
         } catch (err) {
             toast.error(err.message, { id: toastId });
         }
+        setIsDeleting(false);
     };
 
     if (authLoading || loading) {
@@ -301,6 +321,24 @@ export default function AdminDashboard() {
                                     className="w-full px-4 py-2 bg-white border border-border rounded-lg text-text focus:ring-2 focus:ring-accent outline-none"
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-1">Confirmar Contraseña</label>
+                                <input 
+                                    type="text" 
+                                    value={resetPasswordConfirm}
+                                    onChange={(e) => setResetPasswordConfirm(e.target.value)}
+                                    placeholder="Repite la contraseña"
+                                    className={`w-full px-4 py-2 bg-white border rounded-lg text-text focus:ring-2 focus:ring-accent outline-none ${
+                                        resetPasswordConfirm && resetPasswordConfirm !== resetPasswordValue
+                                            ? "border-red"
+                                            : "border-border"
+                                    }`}
+                                />
+                                {resetPasswordConfirm && resetPasswordConfirm !== resetPasswordValue && (
+                                    <p className="text-red text-xs mt-1">Las contraseñas no coinciden</p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="p-6 border-t border-border bg-sand/10 flex justify-end gap-3">
@@ -322,6 +360,18 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                open={deleteModalOpen}
+                title="Eliminar CAD"
+                message={`¿Estás seguro de que deseas eliminar permanentemente "${deleteTarget.nombre}"? Esta acción borrará todos sus usuarios y formularios asociados. No se puede deshacer.`}
+                confirmLabel="Eliminar permanentemente"
+                onConfirm={confirmDeleteCad}
+                onCancel={() => setDeleteModalOpen(false)}
+                variant="danger"
+                loading={isDeleting}
+            />
         </div>
     );
 }

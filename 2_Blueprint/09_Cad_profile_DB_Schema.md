@@ -1,84 +1,124 @@
-# 🏢 Blueprint: Extended CAD Profile Schema
+---
+Title: 09_Cad_profile_DB_Schema
+Status: Active
+Last Audit: 2026-03-12
+AI_Context:
+  Domain: Database Schema & Organization Identity
+  Dependencies: [04_Pilot_Project_and_RBAC.md, 07_DB_Interconnections_and_Profiles.md]
+  Related_Code: [3_Product/frontend/app/(protected)/profile/page.jsx, 3_Product/frontend/config/profileOptions.js, 3_Product/frontend/lib/supabaseService.js]
+  Core_Entities: [cad_profiles]
+---
 
-> **Goal:** Based on the PM's request, we are moving the first section ("1. Identificación y contexto CAD" - ~15 questions) out of the hidden Diagnostic Form and directly into the `cad_profiles` database schema.
+# 🏢 Schema Blueprint: The CAD Profile Expansion
+
+## 🧑‍💼 The Human Translation
+> **What is this document?**
+> This explains where all the static, permanent information about a cooperative is stored — their logo, their phone number, what region they operate in, whether they're part of the steering committee. 
 > 
-> **Why?** Because this is structural public data (Founding year, Legal form, Number of partners) that should be visible on their Intranet Directory Business Card.
+> **The Key Analogy — The Flexible Digital Backpack (JSONB):**
+> Usually, if a PM wants to add a new tracking metric like "Are they using TikTok for marketing?", the engineers have to halt the server, write a database migration script to add a new column, test it, deploy it, and restart. This can take hours and risks breaking things.
+>
+> With our "Flexible Digital Backpack" (the `JSONB` column), the PM can add *anything* they want. The database has a special column that acts like a bottomless backpack — you can throw any combination of key-value pairs into it, and it stores them happily. Adding "TikTok Marketing: 🟢" takes 5 minutes of editing a config file, no database migration needed, no server downtime.
 
 ---
 
-## 1. 📊 Updated Database Schema (`cad_profiles` table)
+> **Technical Purpose:** Exact architectural specification for the `cad_profiles` table, defining how structural CAD identity, maturity matrices, and admin flags are stored outside the diagnostic form. This is the central nexus table of the entire platform — almost every other table has a foreign key pointing back to it.
 
-We will expand the existing `cad_profiles` table in Supabase. We will use specific PostgreSQL data types stringently to match the form constraints.
+---
 
-### Core Identity (Already Created)
-| Column Name | Type | UI Input |
-| :--- | :--- | :--- |
-| `id` | UUID | (System generated) |
-| `nombre_comercial` | Text | Text Input (e.g. "Ecoagra") |
-| `descripcion_corta` | Text | Textarea (Elevator pitch) |
-| `logo_url` | Text | Image Upload Zone |
-| `email_contacto` | Text | Email Input |
-| `telefono` | Text | Phone Input |
-| `territorio` | Enum | Dropdown CCAA (e.g. 'Andalucía') |
-| `estado` | Text | Select ('Activo', 'Satélite', 'Inactivo') - Default 'Activo' |
-| `grupo_motor` | Text | Select ('Sí', 'No') - Default 'No' |
+## 🏗️ 1. The Schema Architecture
 
-### Context & Structure (New additions from PDF Pages 1-6)
-| Column | Type | Question Mapped | Example |
+### 1.1. The Standard Columns (Fixed Schema)
+
+| Column Name | PostgreSQL Type | Constraints | Origin | Example Value |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PRIMARY KEY | Mapped from `auth.users.id` (1:1) | `a1b2c3d4-...` |
+| `nombre_comercial` | `text` | NOT NULL | Seed Script / Profile Editor | "Biolur" |
+| `descripcion_corta` | `text` | | Profile Editor | "Cooperativa agroecológica de Bizkaia" |
+| `forma_juridica` | `text` | | Profile Editor | "Cooperativa" |
+| `ano_fundacion` | `integer` | | Profile Editor | 2015 |
+| `email_contacto` | `text` | | Seed Script / Profile Editor | "info@biolur.org" |
+| `telefono` | `text` | | Profile Editor | "+34 600 123 456" |
+| `territorio` | `text` | | Seed Script | "País Vasco" |
+| `alcance_geografico` | `text` | | Diagnostic Form (Q3.5) | "Provincial" |
+| `personas_equipo` | `integer` | | Profile Editor | 8 |
+| `base_social` | `integer` | | Profile Editor | 45 |
+| `logo_url` | `text` | | Supabase Storage bucket link | "https://...supabase.co/storage/.../biolur-logo.png" |
+| `estado` | `text` | DEFAULT 'Activo' | Admin Dashboard | "Activo" \| "Satélite" \| "Inactivo" |
+| `grupo_motor` | `boolean` | DEFAULT false | Admin Dashboard | true |
+| `perfiles_equipo` | `text[]` | Array | Profile Editor | `["Gerencia", "Técnico campo", "Logística"]` |
+| `propiedad_instalaciones` | `text` | | Profile Editor | "Propia" \| "Alquilada" \| "Cedida" |
+
+### 1.2. The JSONB Columns (Flexible Schema — "The Backpacks")
+
+| Column Name | Type | Description | Example Value |
 | :--- | :--- | :--- | :--- |
-| `forma_juridica` | Text | 1.3 Forma jurídica | "Cooperativa de primer grado" |
-| `ano_constitucion` | Int | 1.4 Año de constitución | `2015` |
-| `num_socios_productoras` | Int | 1.5 Número de socias | `45` |
-| `num_personas_trabajadoras`| Int | 1.6 Número de trabajadoras | `3` |
-| `perfiles_equipo` | Array(Text) | 1.7 Perfiles del equipo | `["Gerencia", "Logística"]` |
-| `propiedad_instalaciones` | Text | Select (Propias, Alquiladas, Cesión de uso, Mixto) | "Propias" |
-| `roles_externalizados` | Array(Text) | 1.8 Roles externalizados | `["Administración"]` |
-| `tipo_gobernanza` | Text | 1.9 Tipo de gobernanza | "Órganos de Gobierno + Equipo Técnico" |
-| `radio_comercializacion` | Array(Text) | 1.10 Ámbito territorial | `["Local", "Provincial"]` |
-| `red_supraterritorial` | Boolean | 1.11 Forma parte de red? | `true` |
-| `red_nombre` | Text | 1.11.a Indique cuál | "COAG" |
-| `actividades_cad` | Array(Text) | 1.12 Actividades/Servicios | `["Logística", "Gestión pedidos"]` |
-| `modelo_abastecimiento` | Text | 1.14 Modelo abastecimiento | "Sólo producción socios" |
-| `abastecimiento_regulado` | Boolean | 1.15 Regulado en estatutos? | `true` |
+| `madurez_evaluacion` | `jsonb` | The traffic-light maturity scores per domain | `{"logistica": "🟡", "comercial": "🟢", "gobernanza": "🔴"}` |
+| `intercoop_tecnica` | `jsonb` | What the CAD can teach and wants to learn | `{"aportar": ["Logística", "Marketing"], "aprender": ["Gobernanza"]}` |
 
-### Autoevaluación & Madurez (Moved from Section 4 of the Diagnostic Form)
-Because the network needs to easily query *"Who is strong in Logistics?"*, we will map the Maturity Matrix directly into the CAD Profile as a structured `JSONB` block, along with the Intercooperation fields.
+**Why JSONB instead of 15 separate columns?**
+Because the PM changes the maturity dimensions frequently. Adding a new dimension (e.g., "Marketing Digital") with JSONB requires:
+1. Edit `config/profileOptions.js` to add the new option
+2. The React component automatically renders a new row in the semaphore matrix
+3. The database stores the new key-value pair inside the existing JSONB column
+4. **Total time: 5 minutes. No SQL migration. No server restart. No deployment.**
 
-| Column | Type | Question Mapped | Example |
-| :--- | :--- | :--- | :--- |
-| `madurez_evaluacion` | JSONB | 4.1 Autoevaluación por ámbitos (10 categorías) | `{"Logística": "🟢 Consolidado", "Calidad": "🟡 En desarrollo"}` |
-| `datos_adicionales` | JSONB | **[Architecture Exception Flag]** | `{"nueva_pregunta_random": "Esta respuesta no tiene una columna propia."}` |
-| `madurez_fortalezas` | Text | 4.1a Ámbitos con prácticas consolidadas | "Somos muy fuertes coordinando la huerta local..." |
-| `madurez_cuellos_botella` | Text | 4.1b Mayores dificultades o cuellos de botella | "Logística de frío compartida" |
-| `intercoop_compartir` | Array(Text) | 4.2 Ámbitos para compartir experiencia | `["Digitalización", "Gestión comercial"]` |
-| `intercoop_apoyo_necesario` | Array(Text) | 4.3 Ámbitos donde se necesita formación | `["Costes de producción", "Marketing"]` |
-| `intercoop_disposicion` | Text | 4.4 Disposición a participar en espacios | "Sí, como participante activo" |
-| `intercoop_referentes` | Text | 4.5 Personas embajadoras o referentes | "Miguel en digitalización de Pod" |
+Adding the same dimension with traditional columns would require:
+1. Write an `ALTER TABLE ADD COLUMN` SQL migration
+2. Update `lib/supabaseService.js` to include the new column in the payload
+3. Update the React component to render the new field
+4. Test the migration on staging
+5. Deploy to production
+6. **Total time: 1-2 hours. Risk of breaking changes.**
 
 ---
 
-## 2. 🎛️ How the UI Interconnects
+## 📜 2. Strict Data Contract (For AI & React)
 
-Moving these 15 questions into the Profile Database fundamentally changes the User Experience for the better.
+When interacting with the `cad_profiles` table via Supabase, AIs must strictly follow this TypeScript structure for the payload to prevent the silent field-drop bug (See `.agent/core/lessons_learned.md`, Directive 4).
 
-### A. The "Configuración del Perfil" Page (New UI)
-When the Admin clicks "Impersonate", they will go to `/profile` (or the CAD goes there directly).
-This page will ask these 15 structural questions precisely formatting them into the `cad_profiles` table.
+```typescript
+interface CadProfilePayload {
+  // --- Static primitives (fixed columns) ---
+  nombre_comercial: string;
+  descripcion_corta: string | null;
+  forma_juridica: string | null;
+  ano_fundacion: number | null;
+  email_contacto: string | null;
+  telefono: string | null;
+  territorio: string | null;
+  alcance_geografico: string | null;
+  personas_equipo: number | null;
+  base_social: number | null;
+  logo_url: string | null;
+  estado: "Activo" | "Satélite" | "Inactivo";
+  grupo_motor: boolean;
+  perfiles_equipo: string[];          // Postgres text[] array
+  propiedad_instalaciones: string | null;
+  
+  // --- Dynamic JSONB Columns ("The Backpacks") ---
+  madurez_evaluacion: {
+    [metric_key: string]: "🔴" | "🟡" | "🟢";
+  };
+  intercoop_tecnica: {
+    aportar: string[];   // What this CAD can teach
+    aprender: string[];  // What this CAD wants to learn
+  };
+}
 
-### B. The Diagnostic Form Module `/form` (Updated)
-Because we ripped these 15 questions out of the massive diagnostic form... the logic changes:
-- Section 1 of the Diagnostic Form becomes much shorter.
-- The Diagnostic Form now focuses strictly on *operational health metrics* (Governance Health, Financial Health, Logistics Health), not structural identity.
-
-### C. The Directory Profile View `/directory/[cad_id]`
-When another CAD clicks on "Biolur" in the Intranet Directory...
-- The page queries the `cad_profiles` table.
-- It displays a beautiful Business Card UI showing: their Logo, Founding Year (`ano_constitucion`), the size of their network (`num_socios_productoras`), and their `radio_comercializacion`.
+// The Supabase service function MUST include ALL of these fields in the .update() payload.
+// If ANY field is omitted from the payload, Supabase will NOT update it (it won't error, it just silently ignores it).
+// This has caused data loss bugs before. See lessons_learned.md, Directive 4.
+```
 
 ---
 
-## 3. 🛠️ Action Plan for Engineering Team
-If the PM approves this data model:
-1. Run an `ALTER TABLE cad_profiles` SQL command in Supabase to add these new columns.
-2. Build the `/profile` settings page with React Hook Form to allow CADs (or the Admin impersonator) to fill out this data.
-3. Delete these same questions from the massive `diagnostic_forms` JSON definition to prevent asking them twice.
+## 🛡️ 3. User Experience Impact
+
+| Feature | How `cad_profiles` Powers It |
+|---------|------------------------------|
+| **The Lighter Form** | 15+ static questions removed from the diagnostic flow → higher completion rates |
+| **The "Mi Perfil" Settings Tab** | Users navigate to `/profile` anytime to update their public logo or email — no need to re-do the entire 63-question form |
+| **The Searchable Directory** | `SELECT * FROM cad_profiles WHERE territorio = 'Andalucía' AND estado = 'Activo'` → instant filtering |
+| **The Maturity Map** | `SELECT nombre_comercial, madurez_evaluacion FROM cad_profiles` → renders semaphore badges on the dashboard |
+| **The Matchmaking Engine** | Cross-reference `intercoop_tecnica.aportar[]` from one CAD with `intercoop_tecnica.aprender[]` from another |

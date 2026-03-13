@@ -66,13 +66,24 @@ export default function DirectoryPage() {
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4 bg-blueBgLight p-4 rounded-xl border border-border shadow-sm">
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre o palabra clave..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-sand/20"
-                />
+                <div className="relative flex-1">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre o palabra clave..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 pr-9 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-sand/20"
+                    />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-textLight hover:text-text transition-colors"
+                            aria-label="Limpiar búsqueda"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
                 <select
                     value={filterTerritory}
                     onChange={(e) => setFilterTerritory(e.target.value)}
@@ -151,7 +162,15 @@ export default function DirectoryPage() {
                 {filteredCads.length === 0 && (
                     <div className="text-center p-12 bg-white rounded-xl border border-border">
                         <Users size={48} className="mx-auto text-border mb-4" />
-                        <h3 className="text-lg font-medium text-textLight">No se encontraron perfiles</h3>
+                        <h3 className="text-lg font-medium text-textLight mb-4">No se encontraron perfiles</h3>
+                        {(searchTerm || filterTerritory) && (
+                            <button
+                                onClick={() => { setSearchTerm(""); setFilterTerritory(""); }}
+                                className="bg-accent text-text px-6 py-2 rounded-lg hover:bg-accentHover transition-colors font-bold text-sm"
+                            >
+                                Limpiar filtros
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

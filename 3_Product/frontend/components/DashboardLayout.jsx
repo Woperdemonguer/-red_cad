@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -32,6 +33,12 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-white flex flex-col font-sans">
+            {/* Loading state while auth resolves */}
+            {loading && (
+                <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+                    <LoadingSpinner message="Cargando..." />
+                </div>
+            )}
             {/* Top Navbar */}
             <header className="bg-white border-b border-border z-40 sticky top-0 shadow-sm flex-none">
                 <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -49,7 +56,7 @@ export default function DashboardLayout({ children }) {
                         {/* Desktop Navigation */}
                         <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center ml-8">
                             {navigation.map((item) => {
-                                const isActive = pathname === item.href;
+                                const isActive = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href);
                                 return (
                                     <Link
                                         key={item.name}
@@ -69,7 +76,7 @@ export default function DashboardLayout({ children }) {
 
                         {/* Desktop User Area */}
                         <div className="hidden lg:flex items-center gap-4 border-l border-border pl-4">
-                            <div className="text-xs text-textLight truncate max-w-[150px]">
+                            <div className="text-xs text-textLight truncate max-w-[180px]" title={email}>
                                 {email}
                             </div>
                             <button
@@ -93,10 +100,14 @@ export default function DashboardLayout({ children }) {
             </header>
 
             {/* Mobile Sidebar Overlay */}
-            <aside className={`
-                fixed inset-y-0 right-0 z-50 w-64 bg-white border-l border-border transform transition-transform duration-300 ease-in-out lg:hidden flex flex-col shadow-2xl
-                ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
-            `}>
+            <aside
+                className={`
+                    fixed inset-y-0 right-0 z-50 w-64 bg-white border-l border-border transform transition-transform duration-300 ease-in-out lg:hidden flex flex-col shadow-2xl
+                    ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
+                `}
+                aria-hidden={!isMobileMenuOpen}
+                aria-label="Menú de navegación móvil"
+            >
                 <div className="flex items-center justify-between p-4 border-b border-border">
                     <span className="text-text font-semibold">Menú</span>
                     <button onClick={() => setIsMobileMenuOpen(false)} className="text-textLight hover:text-text p-1">
@@ -106,7 +117,7 @@ export default function DashboardLayout({ children }) {
                 
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                     {navigation.map((item) => {
-                        const isActive = pathname === item.href;
+                        const isActive = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href);
                         const Icon = item.icon;
                         return (
                             <Link

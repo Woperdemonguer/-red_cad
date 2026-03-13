@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
  *   - email:     Current user's email string
  *   - isAdmin:   Boolean — true if user_roles.role === 'admin' OR exists in admin_users_mapping
  *   - cadId:     UUID string — the CAD this user belongs to (null for admins without CAD mapping)
+ *   - cadName:   String — the CAD's nombre_comercial (null while loading or for admins)
  *   - loading:   Boolean — true while auth and role resolution is in progress
  *   - signOut:   Function — signs out and redirects to /login
  *
@@ -27,6 +28,7 @@ export function useAuth() {
         email: "",
         isAdmin: false,
         cadId: null,
+        cadName: null,
         loading: true,
     });
 
@@ -84,8 +86,23 @@ export function useAuth() {
                 email,
                 isAdmin,
                 cadId,
+                cadName: null,
                 loading: false,
             });
+
+            // Fetch CAD name in background (non-blocking for initial load)
+            if (cadId) {
+                supabase
+                    .from("cad_profiles")
+                    .select("nombre_comercial")
+                    .eq("id", cadId)
+                    .limit(1)
+                    .then(({ data }) => {
+                        if (!cancelled && data && data.length > 0) {
+                            setState(prev => ({ ...prev, cadName: data[0].nombre_comercial }));
+                        }
+                    });
+            }
         }
 
         resolveAuth();

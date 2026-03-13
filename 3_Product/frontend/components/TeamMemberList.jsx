@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Users, Trash2, PlusCircle, Edit2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { teamService } from "@/lib/supabaseService";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 /**
  * TeamMemberList — Shared CRUD component for team members.
@@ -29,10 +30,19 @@ export default function TeamMemberList({
     const [newMember, setNewMember] = useState({ user_email: "", nombre_persona: "", perfil_rol: "", telefono: "" });
     const [editingMemberId, setEditingMemberId] = useState(null);
     const [editMemberData, setEditMemberData] = useState({});
+    const [deleteTarget, setDeleteTarget] = useState({ id: null, email: "" });
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     const handleAdd = async () => {
         if (!newMember.user_email || !newMember.nombre_persona) {
             toast.error("El correo y el nombre son obligatorios.");
+            return;
+        }
+
+        // Basic email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newMember.user_email)) {
+            toast.error("El formato del correo electrónico no es válido.");
             return;
         }
 
@@ -47,12 +57,16 @@ export default function TeamMemberList({
     };
 
     const handleRemove = async (id, email) => {
-        if (!confirm(`¿Quitar acceso e información de contacto a ${email}?`)) return;
+        setDeleteTarget({ id, email });
+        setDeleteModalOpen(true);
+    };
 
+    const confirmRemove = async () => {
         try {
-            await teamService.remove(isAdmin, id);
-            onMembersChange(members.filter(m => m.id !== id));
+            await teamService.remove(isAdmin, deleteTarget.id);
+            onMembersChange(members.filter(m => m.id !== deleteTarget.id));
             toast.success("Acceso eliminado");
+            setDeleteModalOpen(false);
         } catch (err) {
             toast.error(err.message);
         }
@@ -148,6 +162,17 @@ export default function TeamMemberList({
                     <PlusCircle size={16} /> {addLabel}
                 </button>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                open={deleteModalOpen}
+                title="Quitar Acceso"
+                message={`¿Quitar acceso e información de contacto a ${deleteTarget.email}?`}
+                confirmLabel="Quitar acceso"
+                onConfirm={confirmRemove}
+                onCancel={() => setDeleteModalOpen(false)}
+                variant="danger"
+            />
         </div>
     );
 }
