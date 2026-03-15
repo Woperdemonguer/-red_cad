@@ -311,11 +311,11 @@ function ProfileForm() {
     };
 
     const SECTION_NAV = useMemo(() => [
-        { id: 'sec-identidad', label: 'Identidad y Contacto', icon: '🏢' },
-        { id: 'sec-estructura', label: 'Estructura y Dimensión', icon: '🔗' },
-        { id: 'sec-composicion', label: 'Composición Detallada', icon: '👥' },
-        { id: 'sec-actividad', label: 'Actividad y Servicios', icon: '🔧' },
-        { id: 'sec-infraestructuras', label: 'Infraestructuras y Redes', icon: '🏛️' },
+        { id: 'sec-identidad', label: 'Datos de Identificación', icon: '🏢' },
+        { id: 'sec-estructura', label: 'Composición y Estructura del Equipo', icon: '👥' },
+        { id: 'sec-composicion', label: 'Gobernanza y Organización', icon: '🏛️' },
+        { id: 'sec-actividad', label: 'Actividad, Servicios y Abastecimiento', icon: '🔧' },
+        { id: 'sec-infraestructuras', label: 'Infraestructuras, Redes y Contacto', icon: '🏗️' },
         { id: 'sec-autoevaluacion', label: 'Autoevaluación Técnica', icon: '🔬' },
         { id: 'sec-intercoop', label: 'Intercooperación Técnica', icon: '🤝' },
     ], []);
@@ -430,7 +430,7 @@ function ProfileForm() {
                 {/* Section 1: Identidad — always visible */}
                 <div id="sec-identidad" className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm">
                     <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
-                        <Building className="text-accent" size={20} /> Identidad y Contacto
+                        <Building className="text-accent" size={20} /> Datos de Identificación
                     </h2>
 
                     <div className="mb-8 flex items-end gap-6">
@@ -584,8 +584,8 @@ function ProfileForm() {
                 {/* Section 2: Estructura */}
                 <div id="sec-estructura" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-estructura')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-estructura' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
-                        <span className="text-xl">🔗</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Estructura y Dimensión</span>
+                        <span className="text-xl">👥</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Composición y Estructura del Equipo</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-estructura' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-estructura' && (
@@ -655,8 +655,8 @@ function ProfileForm() {
                 {/* Section 2b: Composición Detallada (v2.0) */}
                 <div id="sec-composicion" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-composicion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-composicion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
-                        <span className="text-xl">👥</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Composición Detallada</span>
+                        <span className="text-xl">🏛️</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Gobernanza y Organización</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-composicion' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-composicion' && (
@@ -735,7 +735,7 @@ function ProfileForm() {
                 <div id="sec-actividad" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-actividad')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-actividad' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🔧</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad y Servicios</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad, Servicios y Abastecimiento</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-actividad' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-actividad' && (
@@ -802,8 +802,8 @@ function ProfileForm() {
                 {/* Section 2d: Infraestructuras y Redes (v2.0) */}
                 <div id="sec-infraestructuras" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-infraestructuras')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-infraestructuras' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
-                        <span className="text-xl">🏛️</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras y Redes</span>
+                        <span className="text-xl">🏗️</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras, Redes y Contacto</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-infraestructuras' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-infraestructuras' && (
