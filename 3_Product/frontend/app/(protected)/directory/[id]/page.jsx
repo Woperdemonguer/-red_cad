@@ -165,12 +165,13 @@ export default function CadPublicProfile({ params }) {
             {/* Tab Content: Detalle Formulario */}
             {activeTab === "detalle" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 animate-fade-in">
-                    {/* Left Column (Identity & Contact) */}
-                    <div className="space-y-8 lg:col-span-1">
+                    {/* Left Column — grouped by blueprint sections */}
+                    <div className="space-y-6 lg:col-span-1">
+                        {/* Datos de Identificación */}
                         <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
                             <div className="px-6 py-4 bg-sand/30 border-b border-border">
                                 <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                    <Building size={16} /> Ficha de Identidad
+                                    <Building size={16} /> Datos de Identificación
                                 </h4>
                             </div>
                             <div className="p-6 space-y-4 text-sm">
@@ -180,19 +181,75 @@ export default function CadPublicProfile({ params }) {
                                     { label: "Forma Jurídica", value: cad.forma_juridica },
                                     { label: "Año Constitución", value: cad.ano_constitucion },
                                     { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
-                                    { label: "Socias Productoras", value: cad.num_socios_productoras },
-                                    { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
-                                    { label: "Personas en Plantilla", value: cad.num_personas_trabajadoras },
-                                    { label: "Modelo de Gobernanza", value: cad.tipo_gobernanza },
-                                    { label: "Propiedad Instalaciones", value: cad.propiedad_instalaciones },
-                                    { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
-                                    { label: "Modelo Abastecimiento", value: cad.datos_adicionales?.modelo_abastecimiento },
                                 ].map((field, i) => (
                                     <div key={i}>
                                         <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
                                         <span className="font-medium text-text">{field.value || "—"}</span>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* Composición y Equipo */}
+                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                            <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                    <Users size={16} /> Composición y Equipo
+                                </h4>
+                            </div>
+                            <div className="p-6 space-y-4 text-sm">
+                                {[
+                                    { label: "Socias Productoras", value: cad.num_socios_productoras },
+                                    { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
+                                    { label: "Personas en Plantilla", value: cad.num_personas_trabajadoras },
+                                    { label: "Modelo de Gobernanza", value: cad.tipo_gobernanza },
+                                ].map((field, i) => (
+                                    <div key={i}>
+                                        <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
+                                        <span className="font-medium text-text">{field.value || "—"}</span>
+                                    </div>
+                                ))}
+                                {cad.perfiles_equipo?.length > 0 && (
+                                    <div>
+                                        <span className="text-textLight block text-xs uppercase mb-2">Perfiles del Equipo</span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {cad.perfiles_equipo.map((p, i) => (
+                                                <span key={i} className="px-2 py-1 bg-sand text-text text-xs rounded-full border border-border">{p}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Abastecimiento + Infraestructuras */}
+                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                            <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                    <Landmark size={16} /> Abastecimiento e Infraestructuras
+                                </h4>
+                            </div>
+                            <div className="p-6 space-y-4 text-sm">
+                                {[
+                                    { label: "Modelo Abastecimiento", value: cad.datos_adicionales?.modelo_abastecimiento },
+                                    { label: "Propiedad Instalaciones", value: cad.propiedad_instalaciones },
+                                    { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
+                                ].map((field, i) => (
+                                    <div key={i}>
+                                        <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
+                                        <span className="font-medium text-text">{field.value || "—"}</span>
+                                    </div>
+                                ))}
+                                {cad.datos_adicionales?.infraestructuras?.length > 0 && (
+                                    <div>
+                                        <span className="text-textLight block text-xs uppercase mb-2">Activos Clave</span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {cad.datos_adicionales.infraestructuras.map((inf, i) => (
+                                                <span key={i} className="px-2 py-1 bg-sand text-text text-xs rounded-full border border-border">{inf}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -213,27 +270,9 @@ export default function CadPublicProfile({ params }) {
                                     {cad.datos_adicionales.motivo_creacion && (
                                         <div className="mt-4 pt-4 border-t border-border">
                                             <span className="text-textLight block text-xs uppercase mb-1">Motivo de creación</span>
-                                            <p className="text-sm text-text italic">"{cad.datos_adicionales.motivo_creacion}"</p>
+                                            <p className="text-sm text-text italic">&quot;{cad.datos_adicionales.motivo_creacion}&quot;</p>
                                         </div>
                                     )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Infrastructure */}
-                        {cad.datos_adicionales?.infraestructuras?.length > 0 && (
-                            <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                                <div className="px-6 py-4 bg-sand/30 border-b border-border">
-                                    <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                        <Landmark size={16} /> Infraestructuras
-                                    </h4>
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex flex-wrap gap-2">
-                                        {cad.datos_adicionales.infraestructuras.map((inf, i) => (
-                                            <span key={i} className="px-3 py-1.5 bg-sand text-text text-xs font-medium rounded-full border border-border">{inf}</span>
-                                        ))}
-                                    </div>
                                 </div>
                             </div>
                         )}
