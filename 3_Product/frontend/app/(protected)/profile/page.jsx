@@ -311,15 +311,15 @@ function ProfileForm() {
     };
 
     const SECTION_NAV = useMemo(() => [
-        { id: 'sec-identidad', label: 'Datos de Identificación', icon: '🏢' },
-        { id: 'sec-composicion', label: 'Composición y Estructura del Equipo', icon: '👥' },
-        { id: 'sec-gobernanza', label: 'Gobernanza y Organización', icon: '🏛️' },
-        { id: 'sec-actividad', label: 'Actividad, Servicios y Razón de Ser', icon: '🔧' },
-        { id: 'sec-abastecimiento', label: 'Modelo de Abastecimiento y Regulación', icon: '📦' },
-        { id: 'sec-infraestructuras', label: 'Infraestructuras y Activos Clave', icon: '🏗️' },
-        { id: 'sec-redes', label: 'Redes y Contacto', icon: '🌐' },
-        { id: 'sec-autoevaluacion', label: 'Autoevaluación Técnica', icon: '🔬' },
-        { id: 'sec-intercoop', label: 'Intercooperación Técnica', icon: '🤝' },
+        { id: 'sec-identidad', label: 'Datos de identificación', icon: '🏢' },
+        { id: 'sec-composicion', label: 'Composición y estructura del equipo', icon: '👥' },
+        { id: 'sec-gobernanza', label: 'Gobernanza y organización', icon: '🏛️' },
+        { id: 'sec-actividad', label: 'Actividad, servicios y razón de ser', icon: '🔧' },
+        { id: 'sec-abastecimiento', label: 'Modelo de abastecimiento y regulación', icon: '📦' },
+        { id: 'sec-infraestructuras', label: 'Infraestructuras y activos clave', icon: '🏗️' },
+        { id: 'sec-redes', label: 'Redes y contacto', icon: '🌐' },
+        { id: 'sec-autoevaluacion', label: 'Autoevaluación técnica', icon: '🔬' },
+        { id: 'sec-intercoop', label: 'Intercooperación técnica', icon: '🤝' },
     ], []);
 
     const [openSection, setOpenSection] = useState('sec-identidad');
@@ -614,7 +614,7 @@ function ProfileForm() {
                 <div id="sec-composicion" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-composicion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-composicion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">👥</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Composición y Estructura del Equipo</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Composición y estructura del equipo</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-composicion' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-composicion' && (
@@ -672,7 +672,7 @@ function ProfileForm() {
                 <div id="sec-gobernanza" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-gobernanza')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-gobernanza' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🏛️</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Gobernanza y Organización</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Gobernanza y organización</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-gobernanza' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-gobernanza' && (
@@ -741,7 +741,7 @@ function ProfileForm() {
                 <div id="sec-actividad" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-actividad')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-actividad' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🔧</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad, Servicios y Razón de Ser</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad, servicios y razón de ser</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-actividad' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-actividad' && (
@@ -774,7 +774,7 @@ function ProfileForm() {
                 <div id="sec-abastecimiento" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-abastecimiento')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-abastecimiento' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">📦</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Modelo de Abastecimiento y Regulación</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Modelo de abastecimiento y regulación</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-abastecimiento' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-abastecimiento' && (
@@ -820,7 +820,7 @@ function ProfileForm() {
                 <div id="sec-infraestructuras" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-infraestructuras')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-infraestructuras' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🏗️</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras y Activos Clave</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras y activos clave</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-infraestructuras' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-infraestructuras' && (
@@ -874,7 +874,7 @@ function ProfileForm() {
                 <div id="sec-redes" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-redes')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-redes' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🌐</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Redes y Contacto</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Redes y contacto</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-redes' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-redes' && (
@@ -913,7 +913,7 @@ function ProfileForm() {
                 <div id="sec-autoevaluacion" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-autoevaluacion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-autoevaluacion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🔬</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Autoevaluación Técnica</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Autoevaluación técnica</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-autoevaluacion' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-autoevaluacion' && (
@@ -985,7 +985,7 @@ function ProfileForm() {
                 <div id="sec-intercoop" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-intercoop')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-intercoop' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🤝</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Intercooperación Técnica</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Intercooperación técnica</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-intercoop' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-intercoop' && (

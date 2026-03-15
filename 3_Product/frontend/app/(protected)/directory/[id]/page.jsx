@@ -111,7 +111,7 @@ export default function CadPublicProfile({ params }) {
                     {/* About */}
                     <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm p-8">
                         <h3 className="text-xl font-bold font-serif text-text mb-4 flex items-center gap-2">
-                            <Building size={20} className="text-warmGray" /> Sobre la Organización
+                            <Building size={20} className="text-warmGray" /> Sobre la organización
                         </h3>
                         <p className="text-lg text-text leading-relaxed whitespace-pre-wrap">
                             {cad.descripcion_corta || "Esta agrupación aún no ha proporcionado una descripción."}
@@ -226,7 +226,7 @@ export default function CadPublicProfile({ params }) {
                         <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
                             <div className="px-6 py-4 bg-sand/30 border-b border-border">
                                 <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                    <Landmark size={16} /> Abastecimiento e Infraestructuras
+                                    <Landmark size={16} /> Abastecimiento e infraestructuras
                                 </h4>
                             </div>
                             <div className="p-6 space-y-4 text-sm">
@@ -258,7 +258,7 @@ export default function CadPublicProfile({ params }) {
                             <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
                                 <div className="px-6 py-4 bg-sand/30 border-b border-border">
                                     <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                        <Wrench size={16} /> Actividades y Servicios
+                                        <Wrench size={16} /> Actividades y servicios
                                     </h4>
                                 </div>
                                 <div className="p-6">
@@ -284,7 +284,7 @@ export default function CadPublicProfile({ params }) {
                         <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
                             <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
                                 <Microscope className="text-warmGray" size={18} />
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Autodiagnóstico de Madurez Técnica</h4>
+                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Autodiagnóstico de madurez técnica</h4>
                             </div>
                             <div className="p-6">
                                 <div className="bg-sand/10 rounded-lg border border-border p-4 text-sm divide-y divide-border">
@@ -326,7 +326,7 @@ export default function CadPublicProfile({ params }) {
                         <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
                             <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
                                 <LinkIcon className="text-warmGray" size={18} />
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Perfil de Intercooperación</h4>
+                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Perfil de intercooperación</h4>
                             </div>
                             <div className="p-6 space-y-8">
                                 <div>
