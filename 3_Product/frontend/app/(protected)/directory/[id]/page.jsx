@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Users, MapPin, Building, Microscope, Link as LinkIcon, ArrowLeft, FileText, LayoutGrid } from "lucide-react";
+import { Users, MapPin, Building, Microscope, Link as LinkIcon, ArrowLeft, FileText, LayoutGrid, Wrench, Landmark } from "lucide-react";
 import Link from "next/link";
 import { profileService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -127,10 +127,13 @@ export default function CadPublicProfile({ params }) {
                             { label: "Año de Constitución", value: cad.ano_constitucion },
                             { label: "Personas Trabajadoras", value: cad.num_personas_trabajadoras },
                             { label: "Gobernanza", value: cad.tipo_gobernanza },
-                        ].map((stat, i) => (
+                            { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
+                            { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
+                            { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
+                        ].filter(s => s.value).map((stat, i) => (
                             <div key={i} className="bg-sand rounded-xl border border-border p-5 text-center shadow-sm">
                                 <p className="text-xs text-textLight uppercase tracking-wider mb-1">{stat.label}</p>
-                                <p className="text-lg font-bold text-text">{stat.value || "—"}</p>
+                                <p className="text-lg font-bold text-text">{stat.value}</p>
                             </div>
                         ))}
                     </div>
@@ -176,9 +179,14 @@ export default function CadPublicProfile({ params }) {
                                     { label: "Teléfono Público", value: cad.telefono },
                                     { label: "Forma Jurídica", value: cad.forma_juridica },
                                     { label: "Año Constitución", value: cad.ano_constitucion },
+                                    { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
                                     { label: "Socias Productoras", value: cad.num_socios_productoras },
+                                    { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
                                     { label: "Personas en Plantilla", value: cad.num_personas_trabajadoras },
                                     { label: "Modelo de Gobernanza", value: cad.tipo_gobernanza },
+                                    { label: "Propiedad Instalaciones", value: cad.propiedad_instalaciones },
+                                    { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
+                                    { label: "Modelo Abastecimiento", value: cad.datos_adicionales?.modelo_abastecimiento },
                                 ].map((field, i) => (
                                     <div key={i}>
                                         <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
@@ -187,6 +195,48 @@ export default function CadPublicProfile({ params }) {
                                 ))}
                             </div>
                         </div>
+
+                        {/* Activities */}
+                        {cad.datos_adicionales?.actividades_cad?.length > 0 && (
+                            <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                                <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                                    <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                        <Wrench size={16} /> Actividades y Servicios
+                                    </h4>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex flex-wrap gap-2">
+                                        {cad.datos_adicionales.actividades_cad.map((act, i) => (
+                                            <span key={i} className="px-3 py-1.5 bg-sage/10 text-forest text-xs font-medium rounded-full border border-forest/20">{act}</span>
+                                        ))}
+                                    </div>
+                                    {cad.datos_adicionales.motivo_creacion && (
+                                        <div className="mt-4 pt-4 border-t border-border">
+                                            <span className="text-textLight block text-xs uppercase mb-1">Motivo de creación</span>
+                                            <p className="text-sm text-text italic">"{cad.datos_adicionales.motivo_creacion}"</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Infrastructure */}
+                        {cad.datos_adicionales?.infraestructuras?.length > 0 && (
+                            <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                                <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                                    <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                        <Landmark size={16} /> Infraestructuras
+                                    </h4>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex flex-wrap gap-2">
+                                        {cad.datos_adicionales.infraestructuras.map((inf, i) => (
+                                            <span key={i} className="px-3 py-1.5 bg-sand text-text text-xs font-medium rounded-full border border-border">{inf}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column (Maturity & Intercoop) */}

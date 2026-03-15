@@ -13,6 +13,8 @@ import { HelpCircle } from "lucide-react";
  */
 export default function MatrixQuestion({ question, value = {}, onChange, tooltips = {} }) {
     const [activeTooltip, setActiveTooltip] = useState(null);
+    // Support both new format (columns) and legacy format (options)
+    const cols = question.columns || question.options || [];
 
     const handleSelect = (row, opt) => {
         onChange({ ...value, [row]: opt });
@@ -23,9 +25,9 @@ export default function MatrixQuestion({ question, value = {}, onChange, tooltip
             <div className="min-w-[500px]">
                 {/* Column Headers */}
                 <div className="grid gap-2 mb-3 border-b border-border pb-2"
-                     style={{ gridTemplateColumns: `1fr repeat(${question.options.length}, 1fr)` }}>
+                     style={{ gridTemplateColumns: `1fr repeat(${cols.length}, 1fr)` }}>
                     <div />
-                    {question.options.map((opt, i) => (
+                    {cols.map((opt, i) => (
                         <div key={i} className="text-xs font-semibold text-textLight text-center flex flex-col items-center gap-1">
                             <span className="text-xl">{opt.split(" ")[0]}</span>
                             <span>{opt.substring(2)}</span>
@@ -40,7 +42,7 @@ export default function MatrixQuestion({ question, value = {}, onChange, tooltip
                         className={`grid gap-2 items-center py-2 ${
                             i < question.rows.length - 1 ? "border-b border-dashed border-border" : ""
                         }`}
-                        style={{ gridTemplateColumns: `1fr repeat(${question.options.length}, 1fr)` }}
+                        style={{ gridTemplateColumns: `1fr repeat(${cols.length}, 1fr)` }}
                     >
                         <div className="text-sm text-text relative flex items-center gap-1.5">
                             <span>{row}</span>
@@ -61,7 +63,7 @@ export default function MatrixQuestion({ question, value = {}, onChange, tooltip
                             )}
                         </div>
 
-                        {question.options.map((opt, j) => (
+                        {cols.map((opt, j) => (
                             <div key={j} className="flex justify-center">
                                 <input
                                     type="radio"

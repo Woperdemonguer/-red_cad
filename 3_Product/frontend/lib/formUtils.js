@@ -4,9 +4,9 @@
  * Extracted from form/page.jsx to enable unit testing.
  * These functions contain the core business logic of the form:
  * - Answer validation (is a value "answered"?)
- * - Progress calculation
+ * - Progress calculation (respecting conditional visibility)
  * - Block completion tracking
- * - Conditional question visibility
+ * - Conditional question visibility (config-driven showWhen)
  */
 
 /**
@@ -24,20 +24,69 @@ export function isAnswered(val) {
 }
 
 /**
- * Counts the total number of answerable questions (excludes "info" type).
+ * Determines if a question should be displayed based on its
+ * `showWhen` config property.
  *
- * @param {Array} blocks - Array of form blocks from diagnosticForm config
- * @returns {number}
+ * showWhen supports two modes:
+ * - { parentId, condition: "answered" } — show when parent has any answer
+ * - { parentId, contains: "text" }      — show when parent answer contains text
+ *
+ * @param {Object} question - The question to check
+ * @param {Array} allBlocks - All form blocks (to find parent across blocks)
+ * @param {Object} answers  - Current answers map
+ * @returns {boolean}
  */
-export function countTotalQuestions(blocks) {
-    return blocks.reduce(
-        (sum, b) => sum + b.questions.filter(q => q.type !== "info").length,
-        0
-    );
+export function shouldShowQuestion(question, allBlocks, answers) {
+    // Questions without showWhen are always visible
+    if (!question.showWhen) return true;
+
+    const { parentId, condition, contains } = question.showWhen;
+    const parentAnswer = answers[parentId];
+
+    // Mode 1: show when parent is answered (any value)
+    if (condition === "answered") {
+        return isAnswered(parentAnswer);
+    }
+
+    // Mode 2: show when parent answer contains specific text
+    if (contains) {
+        if (!parentAnswer) return false;
+        const answerStr = Array.isArray(parentAnswer)
+            ? parentAnswer.join(" ")
+            : String(parentAnswer);
+        return answerStr.toLowerCase().includes(contains.toLowerCase());
+    }
+
+    // Fallback: show the question
+    return true;
 }
 
 /**
- * Counts how many questions have been meaningfully answered.
+ * Non-answerable question types that are excluded from progress counting.
+ */
+const NON_ANSWERABLE_TYPES = new Set(["info", "section"]);
+
+/**
+ * Counts the total number of answerable, VISIBLE questions.
+ * Respects conditional visibility to avoid inflated totals.
+ *
+ * @param {Array} blocks - Array of form blocks from diagnosticForm config
+ * @param {Object} answers - Current answers map (needed for conditional check)
+ * @returns {number}
+ */
+export function countTotalQuestions(blocks, answers = {}) {
+    return blocks.reduce((sum, b) => {
+        if (!b.questions) return sum;
+        return sum + b.questions.filter(q => {
+            if (NON_ANSWERABLE_TYPES.has(q.type)) return false;
+            // Only count visible questions
+            return shouldShowQuestion(q, blocks, answers);
+        }).length;
+    }, 0);
+}
+
+/**
+ * Counts how many visible questions have been meaningfully answered.
  *
  * @param {Array} blocks - Array of form blocks
  * @param {Object} answers - Map of questionId → answer value
@@ -45,8 +94,10 @@ export function countTotalQuestions(blocks) {
  */
 export function countAnsweredQuestions(blocks, answers) {
     return blocks.reduce((sum, b) => {
+        if (!b.questions) return sum;
         return sum + b.questions.filter(q => {
-            if (q.type === "info") return false;
+            if (NON_ANSWERABLE_TYPES.has(q.type)) return false;
+            if (!shouldShowQuestion(q, blocks, answers)) return false;
             return isAnswered(answers[q.id]);
         }).length;
     }, 0);
@@ -60,7 +111,7 @@ export function countAnsweredQuestions(blocks, answers) {
  * @returns {number}
  */
 export function calculateProgress(blocks, answers) {
-    const total = countTotalQuestions(blocks);
+    const total = countTotalQuestions(blocks, answers);
     if (total === 0) return 0;
     return (countAnsweredQuestions(blocks, answers) / total) * 100;
 }
@@ -74,34 +125,9 @@ export function calculateProgress(blocks, answers) {
  * @returns {boolean}
  */
 export function blockHasAnswers(block, answers) {
+    if (!block.questions) return false;
     return block.questions.some(q => {
-        if (q.type === "info") return false;
+        if (NON_ANSWERABLE_TYPES.has(q.type)) return false;
         return isAnswered(answers[q.id]);
     });
-}
-
-/**
- * Determines if a conditional question should be displayed based
- * on the previous question's answer.
- *
- * Rules:
- * - Non-conditional questions are always shown
- * - First question in a block is always shown
- * - Conditional questions appear only if the previous answer
- *   contains negative keywords ("no", "actualizar", "incorrectos")
- *
- * @param {Object} question - The question to check
- * @param {Array} blockQuestions - All questions in the block
- * @param {Object} answers - Current answers map
- * @returns {boolean}
- */
-export function shouldShowQuestion(question, blockQuestions, answers) {
-    if (!question.conditional) return true;
-    const qIndex = blockQuestions.findIndex(q => q.id === question.id);
-    if (qIndex <= 0) return true;
-    const prevQ = blockQuestions[qIndex - 1];
-    const prevAnswer = answers[prevQ.id];
-    if (!prevAnswer) return false;
-    const negativeKeywords = ["no", "actualizar", "incorrectos"];
-    return negativeKeywords.some(kw => prevAnswer.toLowerCase().includes(kw));
 }

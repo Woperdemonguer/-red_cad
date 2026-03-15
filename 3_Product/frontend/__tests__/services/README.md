@@ -13,7 +13,7 @@
 
 | Archivo | Qué testea | Nº de tests |
 |---------|-----------|:-----------:|
-| `supabaseService.test.js` | Las 16 funciones de los 4 servicios: `profileService`, `formService`, `teamService`, `storageService` | Variable (crece con el proyecto) |
+| `supabaseService.test.js` | Las 19 funciones de los 5 servicios: `profileService`, `formService`, `teamService`, `storageService`, `authService` | 35 tests |
 
 ---
 
@@ -32,9 +32,13 @@
    📂 supabaseService
      📂 profileService
        ✓ get() devuelve un perfil por ID
+       ✓ getPrimaryEmail() resuelve el email de contacto
        ✓ list() filtra perfiles vacíos
      📂 formService
        ✓ save() guarda las respuestas
      📂 teamService
        ✓ add() añade un miembro
+     📂 authService
+       ✓ signIn() devuelve sesión válida
+       ✓ getAccessToken() devuelve el token
    ```

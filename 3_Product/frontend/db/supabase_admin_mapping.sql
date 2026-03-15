@@ -17,6 +17,6 @@ CREATE POLICY "Admins can view and manage admin mappings" ON public.admin_users_
         )
         OR
         EXISTS (
-            SELECT 1 FROM public.admin_users_mapping am WHERE am.user_email = (SELECT email FROM auth.users WHERE auth.users.id = auth.uid())
+            SELECT 1 FROM public.admin_users_mapping am WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );

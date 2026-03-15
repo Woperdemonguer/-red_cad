@@ -12,16 +12,25 @@
 
 | Archivo | Servicios que ofrece | Base de Datos que toca |
 |---------|---------------------|----------------------|
-| `supabaseService.js` | 4 servicios con 16 funciones en total | 5 tablas + Storage |
+| `supabaseService.js` | 5 servicios con ~18 funciones en total | 5 tablas + Storage + Auth |
+| `formUtils.js` | Lógica config-driven para el formulario | Ninguna (pura lógica) |
 
-### Detalle de los 4 servicios:
+### Detalle de los 5 servicios de `supabaseService.js`:
 
 | Servicio | Funciones | Para qué sirve | Analogía |
 |----------|:---------:|----------------|----------|
 | `profileService` | 7 | Leer, crear, editar y borrar perfiles de cooperativas | La ficha de cada socio en el archivo de una asociación |
-| `formService` | 3 | Cargar y guardar las 63 respuestas del formulario de diagnóstico | El sistema de guardado automático de un documento de Google |
-| `teamService` | 5 | Gestionar miembros del equipo (añadir, editar, eliminar personas) | La lista de empleados de RRHH |
+| `formService` | 3 | Cargar y guardar las ~90 respuestas del formulario de diagnóstico | El sistema de guardado automático de un documento de Google |
+| `teamService` | 5 | Gestionar personas de contacto (añadir, editar, eliminar personas) | La lista de contactos de RRHH |
 | `storageService` | 1 | Subir logos e imágenes al servidor | Subir una foto de perfil a WhatsApp |
+| `authService` | 2 | Login (`signIn`) y obtener token de sesión (`getAccessToken`) | La tarjeta de acceso al edificio |
+
+### `formUtils.js` — Lógica del formulario:
+
+| Función | Para qué sirve |
+|---------|----------------|
+| `shouldShowQuestion()` | Determina si una pregunta debe mostrarse según respuestas previas (condicionales `showWhen`) |
+| `calculateProgress()` | Calcula el % de progreso del formulario contando solo preguntas visibles |
 
 ---
 

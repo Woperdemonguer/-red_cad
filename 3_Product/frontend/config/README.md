@@ -12,8 +12,8 @@
 
 | Archivo | Contenido | Nº de items | ¿Editable sin programar? |
 |---------|----------|:-----------:|:------------------------:|
-| `diagnosticForm.js` | Las 63 preguntas del formulario divididas en 8 bloques temáticos | 63 preguntas | ✅ Sí (solo texto) |
-| `profileOptions.js` | Opciones de desplegables del perfil: perfiles de equipo, categorías de madurez, ámbitos de intercooperación, tooltips explicativos | ~40 opciones | ✅ Sí (solo texto) |
+| `diagnosticForm.js` | Las ~90 preguntas del formulario divididas en 9 bloques temáticos, con tooltips, condicionales `showWhen`, y separadores de sección | ~90 preguntas | ✅ Sí (solo texto) |
+| `profileOptions.js` | Opciones de selects, checkbox groups, categorías de madurez (11), intercooperación (11), CCAA (18), forma jurídica, gobernanza, criterios compras | ~60 opciones | ✅ Sí (solo texto) |
 
 ---
 

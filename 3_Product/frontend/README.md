@@ -40,6 +40,9 @@ npm run dev
 | `npm run lint` | Ejecuta ESLint | Después de cada cambio significativo |
 | `npm run test` | Ejecuta Vitest (una sola vez) | Antes de marcar una tarea como completada |
 | `npm run test:watch` | Vitest en modo continuo | Durante el desarrollo de tests |
+| `npm run verify:methodology` | Verifica estándares de código y cobertura de docs/tests | Antes de marcar trabajo como completado |
+| `npm run preflight` | Build + tests + verify:methodology encadenados | Verificación rápida offline |
+| `npm run preflight:full` | Preflight + db:check + smoke tests | Verificación completa con DB live |
 | `npm start` | Arranca la build compilada | Solo en producción |
 
 ---
@@ -56,8 +59,8 @@ frontend/
 │   ├── (protected)/         Páginas protegidas (requieren auth)
 │   │   ├── layout.jsx          Wrapper: DashboardLayout + ErrorBoundary
 │   │   ├── dashboard/page.jsx  Vista general de la red
-│   │   ├── form/page.jsx       Formulario de diagnóstico (63 preguntas)
-│   │   ├── profile/page.jsx    Perfil editable del CAD
+│   │   ├── form/page.jsx       Formulario de diagnóstico (9 bloques, ~90 preguntas)
+│   │   ├── profile/page.jsx    Perfil editable del CAD (35+ campos, 7 secciones accordion)
 │   │   ├── directory/page.jsx  Directorio de cooperativas
 │   │   ├── directory/[id]/     Ficha individual de un CAD
 │   │   └── admin/page.jsx      Panel de administración
@@ -67,19 +70,21 @@ frontend/
 ├── components/            ← PIEZAS REUTILIZABLES
 │   ├── DashboardLayout.jsx    Barra de navegación superior + layout
 │   ├── ErrorBoundary.jsx      Captura errores de renderizado
-│   ├── TeamMemberList.jsx     Lista editable de miembros del equipo
+│   ├── TeamMemberList.jsx     Lista editable de personas de contacto
 │   ├── ToastProvider.jsx      Componente global de notificaciones
-│   └── ui/LoadingSpinner.jsx  Spinner de carga animado
+│   ├── ui/LoadingSpinner.jsx  Spinner de carga animado
+│   └── form/MatrixQuestion.jsx Componente de matriz para evaluaciones
 │
 ├── config/                ← DATOS ESTÁTICOS (editables sin programar)
-│   ├── diagnosticForm.js     63 preguntas del formulario en 8 bloques
-│   └── profileOptions.js    Opciones de dropdowns, categorías de madurez
+│   ├── diagnosticForm.js     ~90 preguntas del formulario en 9 bloques temáticos
+│   └── profileOptions.js    Opciones de selects, checkbox groups, categorías de madurez
 │
 ├── hooks/                 ← LÓGICA DE ESTADO
 │   └── useAuth.js            Hook de autenticación (único source of truth)
 │
 ├── lib/                   ← CAPA DE ACCESO A DATOS
-│   └── supabaseService.js    4 servicios: profile, form, team, storage
+│   ├── supabaseService.js    5 servicios: profile, form, team, storage, auth
+│   └── formUtils.js          Lógica config-driven: visibilidad condicional, progreso
 │
 ├── utils/                 ← UTILIDADES
 │   └── supabase.js           Cliente Supabase (conexión al backend)
@@ -128,6 +133,29 @@ Definida en `tailwind.config.js`. Usar SIEMPRE nombres semánticos, nunca hex di
 
 ---
 
+## 🔐 Modelo de Autenticación
+
+Cada CAD tiene **una única cuenta** en Supabase Auth (email + contraseña):
+
+```text
+Supabase Auth (1 user per CAD)
+    │
+    ├── cad_users_mapping    email → cad_id (resolución de CAD + directorio de contactos)
+    ├── admin_users_mapping   email → admin (whitelist de administradores)
+    └── user_roles            user_id → 'admin' (roles de sistema)
+```
+
+| Concepto | Detalle |
+|----------|--------|
+| **Login** | `signInWithPassword` (email + contraseña) |
+| **Resolución de CAD** | `useAuth()` consulta `cad_users_mapping` por email → obtiene `cad_id` |
+| **Admin detection** | Doble check: `user_roles.role = 'admin'` OR `admin_users_mapping` |
+| **Cambio de contraseña** | CAD: `supabase.auth.updateUser()` desde `/profile` |
+| **Reset de contraseña** | Admin: Server Action `adminResetUserPassword()` desde `/admin` |
+| **Personas de contacto** | `cad_users_mapping` — directorio de equipo del CAD (no login) |
+
+---
+
 ## 🧪 Testing
 
 ```bash
@@ -139,6 +167,7 @@ npm run test:watch
 ```
 
 - **Framework:** Vitest 4.x + Testing Library 16.x + jsdom 28.x
-- **Tests existentes:** `__tests__/services/supabaseService.test.js`
+- **Tests existentes:** 98 tests en 5 archivos (services, hooks, components, lib, scripts)
 - **Mocks:** `__tests__/mocks/supabase.js` (mock del cliente Supabase)
 - **Setup global:** `__tests__/setup.js`
+- **Verificación:** `npm run verify:methodology` (9 checks de patrones de código + cobertura de docs/tests)

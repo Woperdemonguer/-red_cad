@@ -25,6 +25,21 @@
 | `find_ghosts.js` | Busca perfiles huérfanos: filas en `cad_profiles` que no tienen una cuenta correspondiente en `auth.users`. | Después de limpiezas o migraciones | `node scripts/find_ghosts.js` |
 | `test_cad_login.js` | Intenta hacer login como un CAD específico para verificar que las credenciales funcionan. | Para verificar que un CAD puede acceder | `node scripts/test_cad_login.js` |
 
+### Scripts de Verificación Automatizada (Se ejecutan regularmente)
+
+| Script | Propósito | Cuándo ejecutarlo | Comando |
+|--------|----------|-------------------|---------|
+| `smoke_test.js` | Prueba de humo — login real + operaciones CRUD contra Supabase. Detecta errores de RLS y permisos. | Después de cambios en DB/RLS/auth | `npm run test:smoke` |
+| `db_health_check.js` | Valida que el esquema de la base de datos coincide con la estructura esperada. | Después de migraciones o cambios de esquema | `npm run db:check` |
+| `verify_methodology.js` | Verificador de metodología — escanea el código buscando violaciones de los estándares documentados en `.agent/`. Verifica patrones de código (Categoría A) y cobertura de tests/documentación (Categoría B). | Antes de marcar cualquier trabajo como completado | `npm run verify:methodology` |
+
+### Scripts Compuestos (Encadenan varios scripts)
+
+| Comando | Qué Ejecuta | Cuándo Usarlo |
+|---------|-------------|---------------|
+| `npm run preflight` | `lint` → `build` → `test` → `verify:methodology` | Verificación rápida sin DB (offline) |
+| `npm run preflight:full` | `preflight` → `db:check` → `test:smoke` | Verificación completa con DB live |
+
 ---
 
 ## ⚠️ Requisitos para ejecutar estos scripts
@@ -37,3 +52,5 @@
 3. Ejecutar desde la carpeta `3_Product/frontend/`: `cd 3_Product/frontend && node scripts/<nombre>.js`
 
 > 🔒 **Seguridad:** Estos scripts usan el `SUPABASE_SERVICE_ROLE_KEY`, que bypasea toda la seguridad RLS. Nunca compartas esta clave ni la subas a un repositorio público.
+
+> 📝 **Nota:** `verify_methodology.js` NO requiere `.env.local` — analiza código fuente, no la base de datos. Se puede ejecutar offline.

@@ -288,6 +288,49 @@ describe('profileService (extended)', () => {
             expect(result).toHaveLength(1);
         });
     });
+
+    describe('getPrimaryEmail()', () => {
+        it('returns email_contacto when available', async () => {
+            const chain = mockChain({
+                data: { email_contacto: 'contact@cad.org', perfiles_equipo: null },
+                error: null,
+            });
+            mockFrom.mockReturnValue(chain);
+
+            const result = await profileService.getPrimaryEmail('cad-123');
+            expect(result).toBe('contact@cad.org');
+        });
+
+        it('falls back to first team member email when no contact email', async () => {
+            const chain = mockChain({
+                data: { email_contacto: null, perfiles_equipo: [{ email: 'member@cad.org' }] },
+                error: null,
+            });
+            mockFrom.mockReturnValue(chain);
+
+            const result = await profileService.getPrimaryEmail('cad-123');
+            expect(result).toBe('member@cad.org');
+        });
+
+        it('returns null when no email found', async () => {
+            const chain = mockChain({
+                data: { email_contacto: null, perfiles_equipo: [] },
+                error: null,
+            });
+            mockFrom.mockReturnValue(chain);
+
+            const result = await profileService.getPrimaryEmail('cad-123');
+            expect(result).toBeNull();
+        });
+
+        it('returns null on Supabase error', async () => {
+            const chain = mockChain({ data: null, error: { message: 'Not found' } });
+            mockFrom.mockReturnValue(chain);
+
+            const result = await profileService.getPrimaryEmail('bad-id');
+            expect(result).toBeNull();
+        });
+    });
 });
 
 describe('formService (extended)', () => {

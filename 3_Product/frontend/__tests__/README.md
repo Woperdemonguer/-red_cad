@@ -14,7 +14,11 @@
 |-----------------|-----------|----------|
 | `setup.js` | Configuración global que se ejecuta ANTES de cada batería de tests | Encender la máquina del banco de pruebas |
 | `mocks/supabase.js` | Simulación del cliente Supabase (datos falsos) | Un maniquí de pruebas de choque (simula un humano sin serlo) |
-| `services/supabaseService.test.js` | Tests del service layer — verifican que las funciones de datos funcionan | Las pruebas de freno, motor y luces |
+| `services/supabaseService.test.js` | Tests del service layer — verifican que las 19 funciones de datos funcionan | Las pruebas de freno, motor y luces |
+| `hooks/useAuth.test.js` | Tests del hook de autenticación | Verificar que la puerta de seguridad funciona |
+| `components/ui.test.jsx` | Tests de componentes de UI (modales, spinners, toasts) | Verificar que los indicadores del tablero se encienden |
+| `lib/formUtils.test.js` | Tests de utilidades de formularios | Verificar que la calculadora funciona |
+| `scripts/verify_methodology.test.js` | Tests del verificador de metodología (9 checks automatizados) | Verificar que el inspector de calidad no tiene fallos |
 
 ---
 
@@ -29,10 +33,13 @@
    # Ejecutar todos los tests una vez
    npm run test
    
-   # Resultado: ✅ supabaseService.test.js (4 tests passed)
+   # Resultado: ✅ 5 test files, 98 tests passed
    
    # Modo continuo (se re-ejecutan cada vez que guardas un archivo)
    npm run test:watch
+   
+   # Verificación de metodología (no tests, sino checks de estándares)
+   npm run verify:methodology
    ```
 
 4. **Cómo se lee un resultado de test:**

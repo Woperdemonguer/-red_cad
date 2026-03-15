@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect, useRef, Suspense, useMemo } from "react";
-import { Save, CheckCircle2, Home } from "lucide-react";
+import { Save, CheckCircle2, Home, Info, HelpCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { formService } from "@/lib/supabaseService";
-import { isAnswered, countTotalQuestions, countAnsweredQuestions, shouldShowQuestion as shouldShow } from "@/lib/formUtils";
+import { isAnswered, countTotalQuestions, countAnsweredQuestions, shouldShowQuestion } from "@/lib/formUtils";
 import { MADUREZ_TOOLTIPS, blocks } from "@/config/diagnosticForm";
 
 // Extracted question-type components
@@ -15,6 +15,35 @@ import CheckboxQuestion from "@/components/form/CheckboxQuestion";
 import TextQuestion from "@/components/form/TextQuestion";
 import InfoQuestion from "@/components/form/InfoQuestion";
 import MatrixQuestion from "@/components/form/MatrixQuestion";
+import NumericQuestion from "@/components/form/NumericQuestion";
+import DropdownQuestion from "@/components/form/DropdownQuestion";
+
+// Tooltip component for per-question help text (hover + click)
+function QuestionTooltip({ text }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      className="relative inline-block ml-1.5"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="text-warmGray hover:text-sage transition-colors bg-transparent border-none cursor-pointer p-0"
+        aria-label="Más información"
+      >
+        <HelpCircle size={15} />
+      </button>
+      {open && (
+        <div className="absolute z-50 left-1/2 -translate-x-1/2 top-7 w-72 sm:w-80 bg-sand border border-border rounded-xl p-3.5 text-[13px] text-warmGray leading-relaxed shadow-lg animate-fade-in">
+          {text}
+          <button onClick={() => setOpen(false)} className="absolute top-1.5 right-2.5 text-warmGray hover:text-text bg-transparent border-none cursor-pointer text-base">×</button>
+        </div>
+      )}
+    </span>
+  );
+}
 
 function FormComponent() {
   const [currentBlock, setCurrentBlock] = useState(0);
@@ -43,8 +72,8 @@ function FormComponent() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasUnsavedChanges]);
 
-  // G3 fix: Calculate progress based on answered questions, not block position
-  const totalQuestions = useMemo(() => countTotalQuestions(blocks), []);
+  // G3 fix: Calculate progress — now respects conditional visibility
+  const totalQuestions = useMemo(() => countTotalQuestions(blocks, answers), [answers]);
   const answeredQuestions = useMemo(() => countAnsweredQuestions(blocks, answers), [answers]);
   const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
 
@@ -142,9 +171,9 @@ function FormComponent() {
     setSaving(false);
   };
 
-  // F3 fix: Check if a question should be shown based on conditional logic
-  const shouldShowQuestion = (question, blockQuestions) => {
-    return shouldShow(question, blockQuestions, answers);
+  // Conditional check now uses config-driven showWhen
+  const isQuestionVisible = (question) => {
+    return shouldShowQuestion(question, blocks, answers);
   };
 
   if (submitted) {
@@ -241,11 +270,54 @@ function FormComponent() {
             <p className="text-[15px] text-warmGray leading-relaxed m-0">{block.intro}</p>
           </div>
 
-          {/* Questions — F3 fix: conditional rendering */}
+          {/* Intro page — rich content rendering */}
+          {block.type === "intro" && block.content && (
+            <div className="flex flex-col gap-6">
+              {block.content.paragraphs?.map((p, i) => (
+                <p key={i} className="text-[15px] text-text leading-relaxed m-0">{p}</p>
+              ))}
+              {block.content.sections?.map((s, i) => (
+                <div key={i} className="bg-sand/50 rounded-2xl px-7 py-5 border border-border/50">
+                  <h3 className="text-base text-text font-semibold mb-3">{s.title}</h3>
+                  <ul className="m-0 pl-5 flex flex-col gap-1.5">
+                    {s.items.map((item, j) => (
+                      <li key={j} className="text-[14px] text-warmGray leading-relaxed">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              {block.content.contact && (
+                <div className="bg-white rounded-2xl px-7 py-5 border border-border shadow-sm">
+                  <h3 className="text-base text-text font-semibold mb-3">Contacto</h3>
+                  <p className="text-[14px] text-warmGray m-0 mb-2">Email: <a href={`mailto:${block.content.contact.email}`} className="text-sage hover:underline">{block.content.contact.email}</a></p>
+                  <div className="flex flex-col gap-1">
+                    {block.content.contact.people?.map((p, i) => (
+                      <p key={i} className="text-[14px] text-warmGray m-0">{p.name} ({p.role}) — {p.phone}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Questions rendering */}
           <div className="flex flex-col gap-8">
             {block.questions.map((q) => {
-              // F3: Skip conditional questions whose trigger hasn't been met
-              if (!shouldShowQuestion(q, block.questions)) return null;
+              // Section headers — visual separator within block
+              if (q.type === "section") {
+                return (
+                  <div key={q.id} className="mt-4 first:mt-0">
+                    <div className="flex items-center gap-3 mb-1">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-xs text-warmGray uppercase tracking-[1.5px] font-semibold whitespace-nowrap">{q.title}</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                  </div>
+                );
+              }
+
+              // Skip hidden conditional questions
+              if (!isQuestionVisible(q)) return null;
 
               return (
                 <div key={q.id} className="bg-white rounded-2xl px-7 py-6 shadow-sm border border-border transition-all duration-300 animate-fade-in">
@@ -254,6 +326,7 @@ function FormComponent() {
                     <p className="text-base text-text m-0 leading-relaxed font-semibold">
                       {q.q}
                       {q.optional && <span className="text-[13px] text-textLight italic font-normal"> (opcional)</span>}
+                      {q.tooltip && <QuestionTooltip text={q.tooltip} />}
                     </p>
                   </div>
 
@@ -262,6 +335,13 @@ function FormComponent() {
                   {q.type === "textarea" && <TextQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />}
                   {q.type === "info" && <InfoQuestion question={q} />}
                   {q.type === "matrix" && <MatrixQuestion question={q} value={answers[q.id] || {}} onChange={v => setAnswer(q.id, v)} tooltips={MADUREZ_TOOLTIPS} />}
+                  {q.type === "numeric" && <NumericQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} comment={answers[q.id + "_comment"]} onCommentChange={v => setAnswer(q.id + "_comment", v)} />}
+                  {q.type === "dropdown" && <DropdownQuestion question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />}
+                  {q.type === "file" && (
+                    <div className="text-[13px] text-warmGray italic bg-sand/50 rounded-lg px-4 py-3">
+                      📎 La subida de archivos estará disponible próximamente.
+                    </div>
+                  )}
                 </div>
               );
             })}

@@ -1,3 +1,6 @@
+# AI Development System (stays local — never push to cloud)
+.agent/
+
 # Node
 node_modules/
 .next/

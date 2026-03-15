@@ -1,7 +1,7 @@
 ---
 Title: 07_DB_Interconnections_and_Profiles
 Status: Active
-Last Audit: 2026-03-12
+Last Audit: 2026-03-15
 AI_Context:
   Domain: Database Architecture & Data Flow
   Dependencies: [08_Product_module_DB_Schema.md, 09_Cad_profile_DB_Schema.md, 04_Pilot_Project_and_RBAC.md]
@@ -52,18 +52,19 @@ La plataforma RedCAD Hub deposita los datos de los usuarios fragmentándolos mat
 ### 2.1. Nivel 1: `cad_profiles` (La Cara Pública)
 | Aspect | Detail |
 |--------|--------|
-| **Contains** | Structural identity: Logo, name, description, territory, email, phone, maturity JSONB, intercooperation JSONB |
+| **Contains** | Structural identity: Logo, name, description, territory, email, phone, maturity JSONB, intercooperation JSONB, `datos_adicionales` JSONB (35+ expanded fields across 7 sections: Identidad, Estructura, Composición, Gobernanza, Actividad, Infraestructuras, Redes) |
 | **Who reads it** | ALL authenticated users. Powers the Directory and Dashboard. |
-| **Who writes it** | The owning CAD (via `/profile` page). Admins (via impersonation or seed script). |
-| **RLS Policy** | `SELECT`: All authenticated. `INSERT/UPDATE`: `auth.uid() = id`. |
+| **Who writes it** | The owning CAD (via `/profile` page with accordion UX — Identidad always visible, 6 collapsible sections). Admins (via `?cad_id=` URL param). |
+| **RLS Policy** | `SELECT`: All authenticated. `UPDATE`: Own CAD via `cad_users_mapping` email match. `ALL`: Admin via `user_roles`. |
+| **Key JSONB** | `datos_adicionales` stores expanded profile fields (gobernanza, composición, actividades, infraestructuras, redes) without schema migrations. |
 | **Analogy** | The cooperative's **business card** — public-facing, permanent, rarely changes. |
 
 ### 2.2. Nivel 2: `diagnostic_forms` (Las Entrañas)
 | Aspect | Detail |
 |--------|--------|
-| **Contains** | The 63 answers to the diagnostic form — financial health, governance tensions, maturity self-assessment |
+| **Contains** | The ~90 answers to the diagnostic form (9 thematic blocks: capacity, governance, economy, etc.) |
 | **Who reads it** | EXCLUSIVELY the Secretaría Técnica (Admin role). Other CADs CANNOT see this. |
-| **Who writes it** | The owning CAD (via `/form` page). Admins (via impersonation). |
+| **Who writes it** | The owning CAD (via `/form` page). Admins (via `?cad_id=` URL param). |
 | **RLS Policy** | `SELECT`: `auth.uid() = cad_id` OR Admin. `INSERT/UPDATE`: `auth.uid() = cad_id`. |
 | **Analogy** | The cooperative's **medical record** — private, sensitive, used for internal analysis. |
 
@@ -92,9 +93,12 @@ La plataforma RedCAD Hub deposita los datos de los usuarios fragmentándolos mat
              │ /profile  │  │    /form      │  │  /catalog        │
              │ READS:    │  │ READS/WRITES: │  │ READS:           │
              │cad_profiles│  │diagnostic_   │  │products JOIN     │
-             │ WRITES:   │  │forms         │  │prices_availability│
-             │cad_profiles│  │              │  │JOIN cad_profiles │
-             └──────────┘  └──────────────┘  └──────────────────┘
+             │+datos_adic│  │forms         │  │prices_availability│
+             │ WRITES:   │  │              │  │JOIN cad_profiles │
+             │cad_profiles│  └──────────────┘  └──────────────────┘
+             │+cad_users │
+             │ _mapping  │
+             └──────────┘
 ```
 
 ---
@@ -105,18 +109,17 @@ La plataforma RedCAD Hub deposita los datos de los usuarios fragmentándolos mat
 The pilot has 16 CADs. Realistically, not all of them will sit down and fill a 63-question form on a website. Some will call the Secretaría Técnica and dictate their answers over the phone or WhatsApp.
 
 ### 4.2. The Solution
-Instead of building a separate "Admin fills form on behalf of CAD" interface (which would double our maintenance burden), we use **Impersonation:**
+Instead of building a separate "Admin fills form on behalf of CAD" interface, the admin navigates directly with a `?cad_id=` URL parameter:
 
 1. Admin opens the Admin Dashboard (`/admin`)
-2. Clicks "Impersonar" next to "CAD Murcia"
-3. A Server Action (`generateImpersonationToken(cad_murcia_uuid)`) mints an ephemeral JWT
-4. The frontend's Supabase client receives this token
-5. RLS now believes `auth.uid() = cad_murcia_uuid`
-6. Admin navigates to `/form` and fills it normally — all saves go to Murcia's `diagnostic_forms` row
-7. Admin clicks "Dejar de impersonar" → their original JWT is restored
+2. Clicks "Editar Perfil" or "Rellenar Formulario" next to a CAD
+3. The URL includes `?cad_id=<target_uuid>` — the profile/form page detects this
+4. Since `useAuth()` confirms admin role, it loads the target CAD's data
+5. Admin edits and saves normally — all writes go to the target CAD's rows
+6. Admin RLS policies (via `user_roles.role = 'admin'`) allow full read/write access
 
 ### 4.3. Security Guarantees
-- The impersonation token is **ephemeral** — it expires after a configurable duration
-- An **audit trail** records which admin impersonated which CAD and when
-- The admin's actual UUID is always trackable via the `ImpersonationContext` object
-- Impersonation ONLY works for accounts in `admin_users_mapping` — a regular CAD user cannot impersonate anyone
+- Only users with `admin` in `user_roles` can use `?cad_id=` (non-admins get an error)
+- Password reset uses a **Server Action** (`adminResetUserPassword`) with `SUPABASE_SERVICE_ROLE_KEY`
+- The service role key is **NEVER exposed** to client-side code
+- RLS policies on every table enforce admin access via `user_roles` check

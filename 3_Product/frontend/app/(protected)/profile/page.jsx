@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState, Suspense, useRef, useCallback } from "react";
-import { Save, UserCircle, Building, Link as LinkIcon, AlertCircle, Microscope, Users, UploadCloud, HelpCircle, ShieldCheck } from "lucide-react";
+import { useEffect, useState, Suspense, useRef, useCallback, useMemo } from "react";
+import { Save, UserCircle, Building, Link as LinkIcon, AlertCircle, Microscope, Users, UploadCloud, HelpCircle, ShieldCheck, Wrench, Landmark, Globe, KeyRound, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { profileService, teamService, storageService } from "@/lib/supabaseService";
+import { supabase } from "@/utils/supabase";
 import TeamMemberList from "@/components/TeamMemberList";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { 
@@ -12,11 +13,21 @@ import {
     MADUREZ_CATEGORIAS, 
     MADUREZ_TOOLTIPS, 
     AMBITOS_INTERCOOP, 
-    INTERCOOP_TOOLTIPS 
+    INTERCOOP_TOOLTIPS,
+    ACTIVIDADES_CAD_OPTIONS,
+    INFRAESTRUCTURAS_OPTIONS,
+    MODELO_ABASTECIMIENTO_OPTIONS,
+    DOCUMENTOS_GOBERNANZA_OPTIONS,
+    PROTOCOLOS_OPTIONS,
+    SUPERFICIE_OPTIONS,
+    CCAA_OPTIONS,
+    FORMA_JURIDICA_OPTIONS,
+    TIPO_GOBERNANZA_OPTIONS,
+    CRITERIOS_COMPRAS_OPTIONS
 } from "@/config/profileOptions";
 
 function ProfileForm() {
-    const { isAdmin: authIsAdmin, cadId: authCadId, loading: authLoading } = useAuth();
+    const { isAdmin: authIsAdmin, cadId: authCadId, email: authEmail, loading: authLoading } = useAuth();
     const searchParams = useSearchParams();
     const targetCadId = searchParams.get("cad_id");
 
@@ -35,8 +46,11 @@ function ProfileForm() {
         ano_constitucion: "",
         num_socios_productoras: "",
         num_personas_trabajadoras: "",
-        forma_juridica: "",
-        tipo_gobernanza: "",
+        forma_juridica: [],
+        forma_juridica_otros: "",
+        tipo_gobernanza: [],
+        tipo_gobernanza_otros: "",
+        tipo_gobernanza_describir: "",
         madurez_evaluacion: {},
         madurez_fortalezas: "",
         madurez_cuellos_botella: "",
@@ -48,12 +62,52 @@ function ProfileForm() {
         estado: "Activo",
         grupo_motor: "No",
         perfiles_equipo: [],
-        propiedad_instalaciones: ""
+        perfiles_equipo_otros: "",
+        propiedad_instalaciones: "",
+        // v2.0 expanded fields — stored in datos_adicionales JSONB
+        datos_adicionales: {
+            municipio_sede: "",
+            inicio_actividad: "",
+            num_socias_femeninas: "",
+            num_socias_activas: "",
+            num_mujeres_plantilla: "",
+            roles_externalizados: "",
+            documentos_gobernanza: [],
+            protocolos_internos: [],
+            presencia_mujeres_direccion: "",
+            actividades_cad: [],
+            actividades_otros: "",
+            motivo_creacion: "",
+            modelo_abastecimiento: "",
+            modelo_abastecimiento_otros: "",
+            regulacion_compras: "",
+            regulacion_compras_otros: "",
+            criterios_compras: "",
+            criterios_compras_otros: "",
+            servicios_externalizados: "",
+            porcentaje_mujeres_junta: "",
+            documentos_gobernanza_otros: "",
+            protocolos_otros: "",
+            foto_grupo_url: "",
+            infraestructuras: [],
+            infraestructuras_otros: "",
+            superficie_instalaciones: "",
+            pertenece_red_supraterritorial: "",
+            redes_supraterritoriales: "",
+            contacto_intercoop: "",
+            contacto_intercoop_secundario: "",
+        }
     });
 
     const [teamMembers, setTeamMembers] = useState([]);
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    // Password change state
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showNewPw, setShowNewPw] = useState(false);
+    const [changingPassword, setChangingPassword] = useState(false);
     const initialProfileRef = useRef(null);
 
     // Auto-clear success message after 4 seconds
@@ -126,6 +180,31 @@ function ProfileForm() {
                         intercoop_compartir: profile.intercoop_compartir || [],
                         intercoop_apoyo_necesario: profile.intercoop_apoyo_necesario || [],
                         perfiles_equipo: profile.perfiles_equipo || [],
+                        datos_adicionales: {
+                            municipio_sede: "",
+                            inicio_actividad: "",
+                            num_socias_femeninas: "",
+                            num_socias_activas: "",
+                            num_mujeres_plantilla: "",
+                            roles_externalizados: "",
+                            documentos_gobernanza: [],
+                            protocolos_internos: [],
+                            presencia_mujeres_direccion: "",
+                            actividades_cad: [],
+                            actividades_otros: "",
+                            motivo_creacion: "",
+                            modelo_abastecimiento: "",
+                            modelo_abastecimiento_otros: "",
+                            regulacion_compras: "",
+                            infraestructuras: [],
+                            infraestructuras_otros: "",
+                            superficie_instalaciones: "",
+                            pertenece_red_supraterritorial: "",
+                            redes_supraterritoriales: "",
+                            contacto_intercoop: "",
+                            contacto_intercoop_secundario: "",
+                            ...(profile.datos_adicionales || {}),
+                        },
                     });
                 }
                 setTeamMembers(team);
@@ -159,6 +238,28 @@ function ProfileForm() {
             ? currentList.filter(item => item !== valor)
             : [...currentList, valor];
         setProfileData({ ...profileData, [campo]: newList });
+        setIsDirty(true);
+    };
+
+    // Handler for datos_adicionales text/select fields
+    const handleDatosChange = (e) => {
+        setProfileData({
+            ...profileData,
+            datos_adicionales: { ...profileData.datos_adicionales, [e.target.name]: e.target.value }
+        });
+        setIsDirty(true);
+    };
+
+    // Handler for datos_adicionales checkbox lists
+    const handleDatosCheckbox = (campo, valor) => {
+        const currentList = profileData.datos_adicionales[campo] || [];
+        const newList = currentList.includes(valor)
+            ? currentList.filter(item => item !== valor)
+            : [...currentList, valor];
+        setProfileData({
+            ...profileData,
+            datos_adicionales: { ...profileData.datos_adicionales, [campo]: newList }
+        });
         setIsDirty(true);
     };
 
@@ -209,6 +310,26 @@ function ProfileForm() {
         }
     };
 
+    const SECTION_NAV = useMemo(() => [
+        { id: 'sec-identidad', label: 'Identidad y Contacto', icon: '🏢' },
+        { id: 'sec-estructura', label: 'Estructura y Dimensión', icon: '🔗' },
+        { id: 'sec-composicion', label: 'Composición Detallada', icon: '👥' },
+        { id: 'sec-actividad', label: 'Actividad y Servicios', icon: '🔧' },
+        { id: 'sec-infraestructuras', label: 'Infraestructuras y Redes', icon: '🏛️' },
+        { id: 'sec-autoevaluacion', label: 'Autoevaluación Técnica', icon: '🔬' },
+        { id: 'sec-intercoop', label: 'Intercooperación Técnica', icon: '🤝' },
+    ], []);
+
+    const [openSection, setOpenSection] = useState('sec-identidad');
+
+    const toggleSection = useCallback((id) => {
+        setOpenSection(prev => {
+            const next = prev === id ? null : id;
+            if (next) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+            return next;
+        });
+    }, []);
+
     if (loading) return <LoadingSpinner message="Cargando perfil..." />;
     if (errorMsg && !profileData?.id && !isAdminView) return <div className="p-8 max-w-2xl mx-auto mt-10 bg-red-50 text-red-700 border border-red-200 rounded-xl">{errorMsg}</div>;
 
@@ -237,8 +358,9 @@ function ProfileForm() {
         );
     }
 
+
     return (
-        <div className="p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
+        <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6 animate-fade-in">
             <div>
                 <h1 className="text-3xl font-bold font-serif text-forest flex items-center gap-3">
                     <UserCircle className="text-accent" size={32} />
@@ -260,7 +382,7 @@ function ProfileForm() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-3">
 
                 {/* --- SECCIÓN ADMIN SOLO --- */}
                 {authIsAdmin && targetCadId && (
@@ -305,8 +427,8 @@ function ProfileForm() {
                 )}
                 {/* --------------------------- */}
 
-                {/* Section 1: Identidad */}
-                <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
+                {/* Section 1: Identidad — always visible */}
+                <div id="sec-identidad" className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm">
                     <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
                         <Building className="text-accent" size={20} /> Identidad y Contacto
                     </h2>
@@ -336,7 +458,12 @@ function ProfileForm() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Territorio (CCAA)</label>
-                            <input type="text" name="territorio" value={profileData.territorio || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                            <select name="territorio" value={profileData.territorio || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                <option value="">Selecciona...</option>
+                                {CCAA_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-textLight mb-2">Descripción Corta / "Bio"</label>
@@ -353,34 +480,128 @@ function ProfileForm() {
                     </div>
                 </div>
 
-                {/* Section Multi-User */}
+                {/* Section: Tu Cuenta — only for logged-in CAD users, not when admin is editing */}
+                {!isAdminView && !targetCadId && (
+                    <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
+                        <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
+                            <KeyRound className="text-accent" size={20} /> Tu Cuenta
+                        </h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4 bg-sand/30 p-4 rounded-lg border border-border">
+                                <div className="p-2 bg-accent/10 rounded-lg text-accent">
+                                    <UserCircle size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs text-textLight font-medium">Email de acceso (Login)</p>
+                                    <p className="text-text font-semibold text-base">{authEmail}</p>
+                                </div>
+                            </div>
+
+                            {!showPasswordForm ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasswordForm(true)}
+                                    className="text-sm text-accent hover:text-accentHover font-medium transition-colors flex items-center gap-2"
+                                >
+                                    <KeyRound size={14} /> Cambiar contraseña
+                                </button>
+                            ) : (
+                                <div className="bg-blueBgLight p-5 rounded-lg border border-border space-y-4 animate-fade-in">
+                                    <h3 className="text-sm font-bold text-text">Nueva contraseña</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="relative">
+                                            <input
+                                                type={showNewPw ? "text" : "password"}
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                placeholder="Nueva contraseña (min. 6 caracteres)"
+                                                className="w-full px-4 py-2 pr-10 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm"
+                                            />
+                                            <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-2 text-textLight hover:text-accent transition-colors">
+                                                {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
+                                        <input
+                                            type={showNewPw ? "text" : "password"}
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="Confirmar contraseña"
+                                            className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-accent bg-white text-sm ${
+                                                confirmPassword && confirmPassword !== newPassword ? 'border-red' : 'border-border'
+                                            }`}
+                                        />
+                                    </div>
+                                    {confirmPassword && confirmPassword !== newPassword && (
+                                        <p className="text-red text-xs">Las contraseñas no coinciden</p>
+                                    )}
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            disabled={changingPassword || !newPassword || newPassword.length < 6 || newPassword !== confirmPassword}
+                                            onClick={async () => {
+                                                setChangingPassword(true);
+                                                try {
+                                                    const { error } = await supabase.auth.updateUser({ password: newPassword });
+                                                    if (error) throw error;
+                                                    toast.success("Contraseña actualizada correctamente");
+                                                    setShowPasswordForm(false);
+                                                    setNewPassword("");
+                                                    setConfirmPassword("");
+                                                } catch (err) {
+                                                    toast.error("Error: " + err.message);
+                                                }
+                                                setChangingPassword(false);
+                                            }}
+                                            className="text-sm bg-forest text-white px-4 py-2 rounded-lg hover:bg-forestLight transition-colors font-medium disabled:opacity-50"
+                                        >
+                                            {changingPassword ? "Guardando..." : "Guardar nueva contraseña"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setShowPasswordForm(false); setNewPassword(""); setConfirmPassword(""); }}
+                                            className="text-sm text-textLight hover:text-text font-medium transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Section: Personas de Contacto */}
                 <TeamMemberList
                     members={teamMembers}
                     onMembersChange={setTeamMembers}
                     isAdmin={false}
                     cadId={profileData.id}
-                    title="Accesos y Personas de Contacto"
-                    subtitle="Añade correos electrónicos de las personas de tu equipo. Cualquiera en esta lista, una vez guardado, podrá enviar su email a la página de Login para recibir un enlace de acceso seguro a este perfil."
+                    title="Personas de Contacto"
+                    subtitle="Añade datos de las personas clave de tu equipo. Esta información será visible solo internamente dentro de la Red."
                     addLabel="Añadir Persona"
                 />
 
                 {/* Section 2: Estructura */}
-                <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
-                    <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
-                        <LinkIcon className="text-accent" size={20} /> Estructura y Dimensión
-                    </h2>
+                <div id="sec-estructura" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-estructura')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-estructura' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">🔗</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Estructura y Dimensión</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-estructura' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-estructura' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Forma Jurídica</label>
-                            <select name="forma_juridica" value={profileData.forma_juridica || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
-                                <option value="">Selecciona...</option>
-                                <option value="SAT">SAT</option>
-                                <option value="Cooperativa de primer grado">Cooperativa de primer grado</option>
-                                <option value="Cooperativa de segundo grado">Cooperativa de segundo grado</option>
-                                <option value="Asociación">Asociación</option>
-                                <option value="Sociedad Limitada (SL)">Sociedad Limitada (SL)</option>
-                                <option value="Otro">Otro</option>
-                            </select>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-text mb-3">Forma Jurídica (marcar todas las que apliquen)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-2">
+                                {FORMA_JURIDICA_OPTIONS.map(opt => (
+                                    <label key={opt} className="flex items-center gap-2 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.forma_juridica || []).includes(opt)} onChange={() => handleCheckbox('forma_juridica', opt)} className="accent-forest w-4 h-4" />
+                                        <span>{opt}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <input type="text" name="forma_juridica_otros" value={profileData.forma_juridica_otros || ''} onChange={handleChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Año de Constitución</label>
@@ -395,13 +616,17 @@ function ProfileForm() {
                             <input type="number" name="num_personas_trabajadoras" value={profileData.num_personas_trabajadoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-textLight mb-2">Tipo de Gobernanza</label>
-                            <select name="tipo_gobernanza" value={profileData.tipo_gobernanza || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
-                                <option value="">Selecciona...</option>
-                                <option value="Órganos de Gobierno y equipo técnico">Órganos de Gobierno y equipo técnico</option>
-                                <option value="Órganos de Gobierno + Equipo + Grupos Trabajo">Órganos de Gobierno + Equipo + Grupos Trabajo</option>
-                                <option value="Secciones cooperativas">Órganos de Gobierno con secciones cooperativas</option>
-                            </select>
+                            <label className="block text-sm font-bold text-text mb-3">Tipo de Gobernanza (marcar todas las que apliquen)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
+                                {TIPO_GOBERNANZA_OPTIONS.map(opt => (
+                                    <label key={opt} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.tipo_gobernanza || []).includes(opt)} onChange={() => handleCheckbox('tipo_gobernanza', opt)} className="mt-1 accent-forest w-4 h-4" />
+                                        <span className="leading-snug">{opt}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <input type="text" name="tipo_gobernanza_otros" value={profileData.tipo_gobernanza_otros || ''} onChange={handleChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
+                            <textarea name="tipo_gobernanza_describir" value={profileData.tipo_gobernanza_describir || ''} onChange={handleChange} rows="2" className="mt-2 w-full px-4 py-2 rounded-lg border border-border bg-sand/30 text-sm focus:ring-1 focus:ring-accent" placeholder="Si no coincide exactamente con ninguna opción, describir aquí..."></textarea>
                         </div>
 
                         <div className="md:col-span-2 mt-4 pt-6 border-t border-border">
@@ -419,26 +644,254 @@ function ProfileForm() {
                                     </label>
                                 ))}
                             </div>
+                            <input type="text" name="perfiles_equipo_otros" value={profileData.perfiles_equipo_otros || ''} onChange={handleChange} className="mt-3 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro perfil no listado..." />
                         </div>
 
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-textLight mb-2">Propiedad de las instalaciones logísticas</label>
-                            <select name="propiedad_instalaciones" value={profileData.propiedad_instalaciones || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                    </div>
+                    </div>
+                    )}
+                </div>
+
+                {/* Section 2b: Composición Detallada (v2.0) */}
+                <div id="sec-composicion" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-composicion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-composicion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">👥</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Composición Detallada</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-composicion' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-composicion' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Municipio sede</label>
+                            <input type="text" name="municipio_sede" value={profileData.datos_adicionales.municipio_sede || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Antequera" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Inicio de actividad (si ≠ constitución)</label>
+                            <input type="number" name="inicio_actividad" value={profileData.datos_adicionales.inicio_actividad || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Año" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Nº socias con titularidad femenina</label>
+                            <input type="number" name="num_socias_femeninas" value={profileData.datos_adicionales.num_socias_femeninas || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Nº socias productoras activas</label>
+                            <input type="number" name="num_socias_activas" value={profileData.datos_adicionales.num_socias_activas || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Nº mujeres en plantilla</label>
+                            <input type="number" name="num_mujeres_plantilla" value={profileData.datos_adicionales.num_mujeres_plantilla || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Presencia de mujeres en dirección</label>
+                            <select name="presencia_mujeres_direccion" value={profileData.datos_adicionales.presencia_mujeres_direccion || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
                                 <option value="">Selecciona...</option>
-                                <option value="Propias">Propias</option>
-                                <option value="Alquiladas">Alquiladas</option>
-                                <option value="Cesión de uso">Cesión de uso</option>
-                                <option value="Mixto">Mixto</option>
+                                <option value="Sí, en la dirección del equipo técnico">Sí, en la dirección del equipo técnico</option>
+                                <option value="Sí, en la Junta Rectora o similares">Sí, en la Junta Rectora o similares</option>
+                                <option value="En ambas">En ambas</option>
+                                <option value="No">No</option>
                             </select>
+                        </div>
+                        {(profileData.datos_adicionales.presencia_mujeres_direccion === "Sí, en la Junta Rectora o similares" || profileData.datos_adicionales.presencia_mujeres_direccion === "En ambas") && (
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">% aprox. de mujeres en Junta Rectora</label>
+                                <input type="number" name="porcentaje_mujeres_junta" value={profileData.datos_adicionales.porcentaje_mujeres_junta || ''} onChange={handleDatosChange} min="0" max="100" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="%" />
+                            </div>
+                        )}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-textLight mb-2">Roles externalizados</label>
+                            <textarea name="roles_externalizados" value={profileData.datos_adicionales.roles_externalizados || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Asesoría fiscal, logística subcontratada..."></textarea>
+                        </div>
+
+                        <div className="md:col-span-2 mt-2 pt-4 border-t border-border">
+                            <label className="block text-sm font-bold text-text mb-3">Documentos de gobernanza</label>
+                            <div className="flex flex-wrap gap-3 pl-2">
+                                {DOCUMENTOS_GOBERNANZA_OPTIONS.map(doc => (
+                                    <label key={doc} className="flex items-center gap-2 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.datos_adicionales.documentos_gobernanza || []).includes(doc)} onChange={() => handleDatosCheckbox('documentos_gobernanza', doc)} className="accent-forest w-4 h-4" />
+                                        <span>{doc}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-text mb-3">Protocolos internos</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
+                                {PROTOCOLOS_OPTIONS.map(prot => (
+                                    <label key={prot} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.datos_adicionales.protocolos_internos || []).includes(prot)} onChange={() => handleDatosCheckbox('protocolos_internos', prot)} className="mt-1 accent-forest w-4 h-4" />
+                                        <span className="leading-snug">{prot}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <input type="text" name="protocolos_otros" value={profileData.datos_adicionales.protocolos_otros || ''} onChange={handleDatosChange} className="mt-3 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro protocolo no listado..." />
                         </div>
                     </div>
                 </div>
+                    )}
+                </div>
 
-                {/* Section 3: Madurez Técnica (Semáforo) */}
-                <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm overflow-hidden">
-                    <h2 className="text-xl font-bold font-serif text-text mb-4 flex items-center gap-2 border-b border-border pb-3">
-                        <Microscope className="text-accent" size={20} /> Autoevaluación Técnica
-                    </h2>
+                {/* Section 2c: Actividad y Servicios (v2.0) */}
+                <div id="sec-actividad" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-actividad')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-actividad' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">🔧</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad y Servicios</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-actividad' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-actividad' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
+
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-bold text-text mb-3">Actividades o servicios del CAD</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
+                                {ACTIVIDADES_CAD_OPTIONS.map(act => (
+                                    <label key={act} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.datos_adicionales.actividades_cad || []).includes(act)} onChange={() => handleDatosCheckbox('actividades_cad', act)} className="mt-1 accent-forest w-4 h-4" />
+                                        <span className="leading-snug">{act}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <div className="mt-3 pl-2">
+                                <input type="text" name="actividades_otros" value={profileData.datos_adicionales.actividades_otros || ''} onChange={handleDatosChange} className="w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otros servicios no listados..." />
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-border">
+                            <label className="block text-sm font-medium text-textLight mb-2">Motivo principal de creación de la agrupación</label>
+                            <textarea name="motivo_creacion" value={profileData.datos_adicionales.motivo_creacion || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="¿Qué necesidad originaria motivó la creación?"></textarea>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">Modelo de abastecimiento</label>
+                                <select name="modelo_abastecimiento" value={profileData.datos_adicionales.modelo_abastecimiento || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                    <option value="">Selecciona...</option>
+                                    {MODELO_ABASTECIMIENTO_OPTIONS.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                                <input type="text" name="modelo_abastecimiento_otros" value={profileData.datos_adicionales.modelo_abastecimiento_otros || ''} onChange={handleDatosChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro modelo..." />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">¿Regulado en Estatutos/RFI?</label>
+                                <select name="regulacion_compras" value={profileData.datos_adicionales.regulacion_compras || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                    <option value="">Selecciona...</option>
+                                    <option value="Sí">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <input type="text" name="regulacion_compras_otros" value={profileData.datos_adicionales.regulacion_compras_otros || ''} onChange={handleDatosChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-border">
+                            <label className="block text-sm font-medium text-textLight mb-2">Criterios o acuerdos para compras externas</label>
+                            <select name="criterios_compras" value={profileData.datos_adicionales.criterios_compras || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                <option value="">Selecciona...</option>
+                                {CRITERIOS_COMPRAS_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                            <input type="text" name="criterios_compras_otros" value={profileData.datos_adicionales.criterios_compras_otros || ''} onChange={handleDatosChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro criterio..." />
+                        </div>
+                    </div>
+                </div>
+                    )}
+                </div>
+
+                {/* Section 2d: Infraestructuras y Redes (v2.0) */}
+                <div id="sec-infraestructuras" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-infraestructuras')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-infraestructuras' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">🏛️</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras y Redes</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-infraestructuras' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-infraestructuras' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
+
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">Propiedad de las instalaciones logísticas</label>
+                                <select name="propiedad_instalaciones" value={profileData.propiedad_instalaciones || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                    <option value="">Selecciona...</option>
+                                    <option value="Propias">Propias</option>
+                                    <option value="Alquiladas">Alquiladas</option>
+                                    <option value="Cesión de uso">Cesión de uso</option>
+                                    <option value="Mixto">Mixto</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">Superficie total instalaciones</label>
+                                <select name="superficie_instalaciones" value={profileData.datos_adicionales.superficie_instalaciones || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                    <option value="">Selecciona...</option>
+                                    {SUPERFICIE_OPTIONS.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-border">
+                            <label className="block text-sm font-bold text-text mb-3">Infraestructuras o activos clave</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
+                                {INFRAESTRUCTURAS_OPTIONS.map(inf => (
+                                    <label key={inf} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.datos_adicionales.infraestructuras || []).includes(inf)} onChange={() => handleDatosCheckbox('infraestructuras', inf)} className="mt-1 accent-forest w-4 h-4" />
+                                        <span className="leading-snug">{inf}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <div className="mt-3 pl-2">
+                                <input type="text" name="infraestructuras_otros" value={profileData.datos_adicionales.infraestructuras_otros || ''} onChange={handleDatosChange} className="w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otros activos no listados..." />
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-border">
+                            <label className="block text-sm font-medium text-textLight mb-2">Servicios o activos clave externalizados</label>
+                            <textarea name="servicios_externalizados" value={profileData.datos_adicionales.servicios_externalizados || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: logística externalizada, contabilidad con asesoría, almacén compartido..."></textarea>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">¿Pertenece a otra red supraterritorial?</label>
+                                <select name="pertenece_red_supraterritorial" value={profileData.datos_adicionales.pertenece_red_supraterritorial || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                    <option value="">Selecciona...</option>
+                                    <option value="Sí">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {profileData.datos_adicionales.pertenece_red_supraterritorial === "Sí" && (
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">¿Cuál(es)?</label>
+                                <input type="text" name="redes_supraterritoriales" value={profileData.datos_adicionales.redes_supraterritoriales || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre de la(s) red(es)" />
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">Contacto principal para intercooperación</label>
+                                <input type="text" name="contacto_intercoop" value={profileData.datos_adicionales.contacto_intercoop || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre, cargo, email, teléfono" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">Contacto secundario (opcional)</label>
+                                <input type="text" name="contacto_intercoop_secundario" value={profileData.datos_adicionales.contacto_intercoop_secundario || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre, cargo, email, teléfono" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    )}
+                </div>
+                <div id="sec-autoevaluacion" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-autoevaluacion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-autoevaluacion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">🔬</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Autoevaluación Técnica</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-autoevaluacion' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-autoevaluacion' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm overflow-hidden mt-2 animate-fade-in">
                     <p className="text-sm text-textLight mb-6">Evalúa de forma honesta las fortalezas y puntos de mejora de tu agrupación. Esto ayudará a conectar ofertas y demandas de intercooperación en la Red.</p>
 
                     <div className="overflow-x-auto">
@@ -499,12 +952,18 @@ function ProfileForm() {
                         </div>
                     </div>
                 </div>
+                    )}
+                </div>
 
                 {/* Section 4: Intercooperación */}
-                <div className="bg-white p-6 md:p-8 rounded-xl border border-border shadow-sm">
-                    <h2 className="text-xl font-bold font-serif text-text mb-6 flex items-center gap-2 border-b border-border pb-3">
-                        <Users className="text-accent" size={20} /> Intercooperación Técnica
-                    </h2>
+                <div id="sec-intercoop" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-intercoop')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-intercoop' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">🤝</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Intercooperación Técnica</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-intercoop' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-intercoop' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
 
                     <div className="space-y-8">
                         <div>
@@ -578,6 +1037,8 @@ function ProfileForm() {
                             </div>
                         </div>
                     </div>
+                </div>
+                    )}
                 </div>
 
                 {/* Submit */}

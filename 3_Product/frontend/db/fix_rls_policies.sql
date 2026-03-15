@@ -15,7 +15,7 @@ CREATE POLICY "CAD users can read own team"
     USING (
         cad_id IN (
             SELECT cum.cad_id FROM public.cad_users_mapping cum
-            WHERE cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE cum.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -24,7 +24,7 @@ CREATE POLICY "CAD users can update own record"
     ON public.cad_users_mapping
     FOR UPDATE
     USING (
-        user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+        user_email = (auth.jwt() ->> 'email')
     );
 
 -- CAD users can INSERT new members into their own CAD
@@ -34,7 +34,7 @@ CREATE POLICY "CAD users can add members to own team"
     WITH CHECK (
         cad_id IN (
             SELECT cum.cad_id FROM public.cad_users_mapping cum
-            WHERE cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE cum.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -45,7 +45,7 @@ CREATE POLICY "CAD users can remove members from own team"
     USING (
         cad_id IN (
             SELECT cum.cad_id FROM public.cad_users_mapping cum
-            WHERE cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE cum.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -68,7 +68,7 @@ CREATE POLICY "CADs can insert their own products"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = products.cad_id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
         OR
         EXISTS (
@@ -78,7 +78,7 @@ CREATE POLICY "CADs can insert their own products"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -89,7 +89,7 @@ CREATE POLICY "CADs can update their own products"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = products.cad_id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
         OR
         EXISTS (
@@ -99,7 +99,7 @@ CREATE POLICY "CADs can update their own products"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -111,7 +111,7 @@ CREATE POLICY "CADs can delete their own products"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = products.cad_id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
         OR
         EXISTS (
@@ -121,7 +121,7 @@ CREATE POLICY "CADs can delete their own products"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -140,7 +140,7 @@ CREATE POLICY "CADs can insert prices for their products"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = prices_availability.cad_id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
         OR
         EXISTS (
@@ -150,7 +150,7 @@ CREATE POLICY "CADs can insert prices for their products"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -161,7 +161,7 @@ CREATE POLICY "CADs can update prices for their products"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = prices_availability.cad_id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
         OR
         EXISTS (
@@ -171,7 +171,7 @@ CREATE POLICY "CADs can update prices for their products"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -182,7 +182,7 @@ CREATE POLICY "CADs can delete prices for their products"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = prices_availability.cad_id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
         OR
         EXISTS (
@@ -192,7 +192,7 @@ CREATE POLICY "CADs can delete prices for their products"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -216,7 +216,7 @@ CREATE POLICY "Admins can manage profiles"
         OR
         EXISTS (
             SELECT 1 FROM public.admin_users_mapping am
-            WHERE am.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            WHERE am.user_email = (auth.jwt() ->> 'email')
         )
     );
 
@@ -228,6 +228,6 @@ CREATE POLICY "CAD users can update own profile"
         EXISTS (
             SELECT 1 FROM public.cad_users_mapping cum
             WHERE cum.cad_id = cad_profiles.id
-            AND cum.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+            AND cum.user_email = (auth.jwt() ->> 'email')
         )
     );

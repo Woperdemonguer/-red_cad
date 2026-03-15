@@ -14,8 +14,9 @@
 |------------|----------------------|-------------|
 | `DashboardLayout.jsx` | La **barra de navegación** en la parte superior con el logo, los enlaces (Dashboard, Perfil, Formulario, Directorio) y el botón de cerrar sesión | En TODAS las páginas protegidas |
 | `ErrorBoundary.jsx` | Una **pantalla de error amigable** con un emoji ⚠️ y un botón "Recargar página" (en vez de una pantalla blanca rota) | Envuelve todas las páginas protegidas |
-| `TeamMemberList.jsx` | La **tabla editable de miembros del equipo** donde puedes añadir, editar o eliminar personas | En la página de Perfil y en Admin |
+| `TeamMemberList.jsx` | La **tabla editable de personas de contacto** donde puedes añadir, editar o eliminar personas de tu equipo | En la página de Perfil y en Admin |
 | `ToastProvider.jsx` | Las **notificaciones** que aparecen brevemente en esquina de la pantalla ("Guardado ✓", "Error ✗") | Global (siempre activo) |
+| `form/MatrixQuestion.jsx` | Una **tabla de evaluación** donde seleccionas un nivel por fila (ej: madurez 1-5) | En la página de Formulario |
 | `ui/` | Subcarpeta de componentes **genéricos** sin contexto de negocio | Ver `ui/README.md` |
 
 ---
