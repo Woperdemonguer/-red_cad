@@ -312,10 +312,12 @@ function ProfileForm() {
 
     const SECTION_NAV = useMemo(() => [
         { id: 'sec-identidad', label: 'Datos de Identificación', icon: '🏢' },
-        { id: 'sec-estructura', label: 'Composición y Estructura del Equipo', icon: '👥' },
-        { id: 'sec-composicion', label: 'Gobernanza y Organización', icon: '🏛️' },
-        { id: 'sec-actividad', label: 'Actividad, Servicios y Abastecimiento', icon: '🔧' },
-        { id: 'sec-infraestructuras', label: 'Infraestructuras, Redes y Contacto', icon: '🏗️' },
+        { id: 'sec-composicion', label: 'Composición y Estructura del Equipo', icon: '👥' },
+        { id: 'sec-gobernanza', label: 'Gobernanza y Organización', icon: '🏛️' },
+        { id: 'sec-actividad', label: 'Actividad, Servicios y Razón de Ser', icon: '🔧' },
+        { id: 'sec-abastecimiento', label: 'Modelo de Abastecimiento y Regulación', icon: '📦' },
+        { id: 'sec-infraestructuras', label: 'Infraestructuras y Activos Clave', icon: '🏗️' },
+        { id: 'sec-redes', label: 'Redes y Contacto', icon: '🌐' },
         { id: 'sec-autoevaluacion', label: 'Autoevaluación Técnica', icon: '🔬' },
         { id: 'sec-intercoop', label: 'Intercooperación Técnica', icon: '🤝' },
     ], []);
@@ -478,6 +480,33 @@ function ProfileForm() {
                             <input type="text" name="telefono" value={profileData.telefono || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-border">
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-text mb-3">Forma Jurídica (marcar todas las que apliquen)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-2">
+                                {FORMA_JURIDICA_OPTIONS.map(opt => (
+                                    <label key={opt} className="flex items-center gap-2 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.forma_juridica || []).includes(opt)} onChange={() => handleCheckbox('forma_juridica', opt)} className="accent-forest w-4 h-4" />
+                                        <span>{opt}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <input type="text" name="forma_juridica_otros" value={profileData.forma_juridica_otros || ''} onChange={handleChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Año de Constitución</label>
+                            <input type="number" name="ano_constitucion" value={profileData.ano_constitucion || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Inicio de actividad (si ≠ constitución)</label>
+                            <input type="number" name="inicio_actividad" value={profileData.datos_adicionales.inicio_actividad || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Año" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Municipio sede</label>
+                            <input type="text" name="municipio_sede" value={profileData.datos_adicionales.municipio_sede || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Antequera" />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Section: Tu Cuenta — only for logged-in CAD users, not when admin is editing */}
@@ -581,52 +610,35 @@ function ProfileForm() {
                     addLabel="Añadir Persona"
                 />
 
-                {/* Section 2: Estructura */}
-                <div id="sec-estructura" className="scroll-mt-24">
-                    <button type="button" onClick={() => toggleSection('sec-estructura')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-estructura' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                {/* Section 2: Composición y Estructura del Equipo (Blueprint 0.6-0.10) */}
+                <div id="sec-composicion" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-composicion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-composicion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">👥</span>
                         <span className="text-lg font-bold font-serif text-text flex-1 text-left">Composición y Estructura del Equipo</span>
-                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-estructura' ? 'rotate-180' : ''}`} size={20} />
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-composicion' ? 'rotate-180' : ''}`} size={20} />
                     </button>
-                    {openSection === 'sec-estructura' && (
+                    {openSection === 'sec-composicion' && (
                     <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-bold text-text mb-3">Forma Jurídica (marcar todas las que apliquen)</label>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-2">
-                                {FORMA_JURIDICA_OPTIONS.map(opt => (
-                                    <label key={opt} className="flex items-center gap-2 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
-                                        <input type="checkbox" checked={(profileData.forma_juridica || []).includes(opt)} onChange={() => handleCheckbox('forma_juridica', opt)} className="accent-forest w-4 h-4" />
-                                        <span>{opt}</span>
-                                    </label>
-                                ))}
-                            </div>
-                            <input type="text" name="forma_juridica_otros" value={profileData.forma_juridica_otros || ''} onChange={handleChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Año de Constitución</label>
-                            <input type="number" name="ano_constitucion" value={profileData.ano_constitucion || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
-                        </div>
                         <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Nº Socias Productoras</label>
                             <input type="number" name="num_socios_productoras" value={profileData.num_socios_productoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
                         <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Nº socias con titularidad femenina</label>
+                            <input type="number" name="num_socias_femeninas" value={profileData.datos_adicionales.num_socias_femeninas || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Nº socias productoras activas</label>
+                            <input type="number" name="num_socias_activas" value={profileData.datos_adicionales.num_socias_activas || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium text-textLight mb-2">Nº Personas en Plantilla</label>
                             <input type="number" name="num_personas_trabajadoras" value={profileData.num_personas_trabajadoras || ''} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-bold text-text mb-3">Tipo de Gobernanza (marcar todas las que apliquen)</label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
-                                {TIPO_GOBERNANZA_OPTIONS.map(opt => (
-                                    <label key={opt} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
-                                        <input type="checkbox" checked={(profileData.tipo_gobernanza || []).includes(opt)} onChange={() => handleCheckbox('tipo_gobernanza', opt)} className="mt-1 accent-forest w-4 h-4" />
-                                        <span className="leading-snug">{opt}</span>
-                                    </label>
-                                ))}
-                            </div>
-                            <input type="text" name="tipo_gobernanza_otros" value={profileData.tipo_gobernanza_otros || ''} onChange={handleChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
-                            <textarea name="tipo_gobernanza_describir" value={profileData.tipo_gobernanza_describir || ''} onChange={handleChange} rows="2" className="mt-2 w-full px-4 py-2 rounded-lg border border-border bg-sand/30 text-sm focus:ring-1 focus:ring-accent" placeholder="Si no coincide exactamente con ninguna opción, describir aquí..."></textarea>
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Nº mujeres en plantilla</label>
+                            <input type="number" name="num_mujeres_plantilla" value={profileData.datos_adicionales.num_mujeres_plantilla || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
                         </div>
 
                         <div className="md:col-span-2 mt-4 pt-6 border-t border-border">
@@ -647,60 +659,37 @@ function ProfileForm() {
                             <input type="text" name="perfiles_equipo_otros" value={profileData.perfiles_equipo_otros || ''} onChange={handleChange} className="mt-3 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro perfil no listado..." />
                         </div>
 
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-textLight mb-2">Roles externalizados</label>
+                            <textarea name="roles_externalizados" value={profileData.datos_adicionales.roles_externalizados || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Asesoría fiscal, logística subcontratada..."></textarea>
+                        </div>
                     </div>
                     </div>
                     )}
                 </div>
 
-                {/* Section 2b: Composición Detallada (v2.0) */}
-                <div id="sec-composicion" className="scroll-mt-24">
-                    <button type="button" onClick={() => toggleSection('sec-composicion')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-composicion' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                {/* Section 3: Gobernanza y Organización (Blueprint 0.11) */}
+                <div id="sec-gobernanza" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-gobernanza')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-gobernanza' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🏛️</span>
                         <span className="text-lg font-bold font-serif text-text flex-1 text-left">Gobernanza y Organización</span>
-                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-composicion' ? 'rotate-180' : ''}`} size={20} />
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-gobernanza' ? 'rotate-180' : ''}`} size={20} />
                     </button>
-                    {openSection === 'sec-composicion' && (
+                    {openSection === 'sec-gobernanza' && (
                     <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Municipio sede</label>
-                            <input type="text" name="municipio_sede" value={profileData.datos_adicionales.municipio_sede || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Antequera" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Inicio de actividad (si ≠ constitución)</label>
-                            <input type="number" name="inicio_actividad" value={profileData.datos_adicionales.inicio_actividad || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Año" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Nº socias con titularidad femenina</label>
-                            <input type="number" name="num_socias_femeninas" value={profileData.datos_adicionales.num_socias_femeninas || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Nº socias productoras activas</label>
-                            <input type="number" name="num_socias_activas" value={profileData.datos_adicionales.num_socias_activas || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Nº mujeres en plantilla</label>
-                            <input type="number" name="num_mujeres_plantilla" value={profileData.datos_adicionales.num_mujeres_plantilla || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-textLight mb-2">Presencia de mujeres en dirección</label>
-                            <select name="presencia_mujeres_direccion" value={profileData.datos_adicionales.presencia_mujeres_direccion || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
-                                <option value="">Selecciona...</option>
-                                <option value="Sí, en la dirección del equipo técnico">Sí, en la dirección del equipo técnico</option>
-                                <option value="Sí, en la Junta Rectora o similares">Sí, en la Junta Rectora o similares</option>
-                                <option value="En ambas">En ambas</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                        {(profileData.datos_adicionales.presencia_mujeres_direccion === "Sí, en la Junta Rectora o similares" || profileData.datos_adicionales.presencia_mujeres_direccion === "En ambas") && (
-                            <div>
-                                <label className="block text-sm font-medium text-textLight mb-2">% aprox. de mujeres en Junta Rectora</label>
-                                <input type="number" name="porcentaje_mujeres_junta" value={profileData.datos_adicionales.porcentaje_mujeres_junta || ''} onChange={handleDatosChange} min="0" max="100" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="%" />
-                            </div>
-                        )}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-textLight mb-2">Roles externalizados</label>
-                            <textarea name="roles_externalizados" value={profileData.datos_adicionales.roles_externalizados || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: Asesoría fiscal, logística subcontratada..."></textarea>
+                            <label className="block text-sm font-bold text-text mb-3">Tipo de Gobernanza (marcar todas las que apliquen)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
+                                {TIPO_GOBERNANZA_OPTIONS.map(opt => (
+                                    <label key={opt} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors">
+                                        <input type="checkbox" checked={(profileData.tipo_gobernanza || []).includes(opt)} onChange={() => handleCheckbox('tipo_gobernanza', opt)} className="mt-1 accent-forest w-4 h-4" />
+                                        <span className="leading-snug">{opt}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <input type="text" name="tipo_gobernanza_otros" value={profileData.tipo_gobernanza_otros || ''} onChange={handleChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
+                            <textarea name="tipo_gobernanza_describir" value={profileData.tipo_gobernanza_describir || ''} onChange={handleChange} rows="2" className="mt-2 w-full px-4 py-2 rounded-lg border border-border bg-sand/30 text-sm focus:ring-1 focus:ring-accent" placeholder="Si no coincide exactamente con ninguna opción, describir aquí..."></textarea>
                         </div>
 
                         <div className="md:col-span-2 mt-2 pt-4 border-t border-border">
@@ -726,21 +715,37 @@ function ProfileForm() {
                             </div>
                             <input type="text" name="protocolos_otros" value={profileData.datos_adicionales.protocolos_otros || ''} onChange={handleDatosChange} className="mt-3 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro protocolo no listado..." />
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-textLight mb-2">Presencia de mujeres en dirección</label>
+                            <select name="presencia_mujeres_direccion" value={profileData.datos_adicionales.presencia_mujeres_direccion || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
+                                <option value="">Selecciona...</option>
+                                <option value="Sí, en la dirección del equipo técnico">Sí, en la dirección del equipo técnico</option>
+                                <option value="Sí, en la Junta Rectora o similares">Sí, en la Junta Rectora o similares</option>
+                                <option value="En ambas">En ambas</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        {(profileData.datos_adicionales.presencia_mujeres_direccion === "Sí, en la Junta Rectora o similares" || profileData.datos_adicionales.presencia_mujeres_direccion === "En ambas") && (
+                            <div>
+                                <label className="block text-sm font-medium text-textLight mb-2">% aprox. de mujeres en Junta Rectora</label>
+                                <input type="number" name="porcentaje_mujeres_junta" value={profileData.datos_adicionales.porcentaje_mujeres_junta || ''} onChange={handleDatosChange} min="0" max="100" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="%" />
+                            </div>
+                        )}
                     </div>
-                </div>
+                    </div>
                     )}
                 </div>
 
-                {/* Section 2c: Actividad y Servicios (v2.0) */}
+                {/* Section 4: Actividad, Servicios y Razón de Ser (Blueprint 0.12-0.13) */}
                 <div id="sec-actividad" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-actividad')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-actividad' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🔧</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad, Servicios y Abastecimiento</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Actividad, Servicios y Razón de Ser</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-actividad' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-actividad' && (
                     <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
-
                     <div className="space-y-6">
                         <div>
                             <label className="block text-sm font-bold text-text mb-3">Actividades o servicios del CAD</label>
@@ -756,13 +761,26 @@ function ProfileForm() {
                                 <input type="text" name="actividades_otros" value={profileData.datos_adicionales.actividades_otros || ''} onChange={handleDatosChange} className="w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otros servicios no listados..." />
                             </div>
                         </div>
-
                         <div className="pt-4 border-t border-border">
                             <label className="block text-sm font-medium text-textLight mb-2">Motivo principal de creación de la agrupación</label>
                             <textarea name="motivo_creacion" value={profileData.datos_adicionales.motivo_creacion || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="¿Qué necesidad originaria motivó la creación?"></textarea>
                         </div>
+                    </div>
+                    </div>
+                    )}
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                {/* Section 5: Modelo de Abastecimiento y Regulación (Blueprint 0.14-0.15) */}
+                <div id="sec-abastecimiento" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-abastecimiento')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-abastecimiento' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">📦</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Modelo de Abastecimiento y Regulación</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-abastecimiento' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-abastecimiento' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-textLight mb-2">Modelo de abastecimiento</label>
                                 <select name="modelo_abastecimiento" value={profileData.datos_adicionales.modelo_abastecimiento || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
@@ -783,7 +801,6 @@ function ProfileForm() {
                                 <input type="text" name="regulacion_compras_otros" value={profileData.datos_adicionales.regulacion_compras_otros || ''} onChange={handleDatosChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro (especificar)..." />
                             </div>
                         </div>
-
                         <div className="pt-4 border-t border-border">
                             <label className="block text-sm font-medium text-textLight mb-2">Criterios o acuerdos para compras externas</label>
                             <select name="criterios_compras" value={profileData.datos_adicionales.criterios_compras || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
@@ -795,20 +812,19 @@ function ProfileForm() {
                             <input type="text" name="criterios_compras_otros" value={profileData.datos_adicionales.criterios_compras_otros || ''} onChange={handleDatosChange} className="mt-2 w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otro criterio..." />
                         </div>
                     </div>
-                </div>
+                    </div>
                     )}
                 </div>
 
-                {/* Section 2d: Infraestructuras y Redes (v2.0) */}
+                {/* Section 6: Infraestructuras y Activos Clave (Blueprint 0.16-0.19) */}
                 <div id="sec-infraestructuras" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-infraestructuras')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-infraestructuras' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🏗️</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras, Redes y Contacto</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Infraestructuras y Activos Clave</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-infraestructuras' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-infraestructuras' && (
                     <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
-
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -831,7 +847,6 @@ function ProfileForm() {
                                 </select>
                             </div>
                         </div>
-
                         <div className="pt-4 border-t border-border">
                             <label className="block text-sm font-bold text-text mb-3">Infraestructuras o activos clave</label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
@@ -846,13 +861,26 @@ function ProfileForm() {
                                 <input type="text" name="infraestructuras_otros" value={profileData.datos_adicionales.infraestructuras_otros || ''} onChange={handleDatosChange} className="w-full px-4 py-2 rounded-lg border border-dashed border-border bg-transparent text-sm italic focus:ring-1 focus:ring-accent" placeholder="Otros activos no listados..." />
                             </div>
                         </div>
-
                         <div className="pt-4 border-t border-border">
                             <label className="block text-sm font-medium text-textLight mb-2">Servicios o activos clave externalizados</label>
                             <textarea name="servicios_externalizados" value={profileData.datos_adicionales.servicios_externalizados || ''} onChange={handleDatosChange} rows="2" className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Ej: logística externalizada, contabilidad con asesoría, almacén compartido..."></textarea>
                         </div>
+                    </div>
+                    </div>
+                    )}
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                {/* Section 7: Redes y Contacto (Blueprint 0.20-0.23) */}
+                <div id="sec-redes" className="scroll-mt-24">
+                    <button type="button" onClick={() => toggleSection('sec-redes')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-redes' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
+                        <span className="text-xl">🌐</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Redes y Contacto</span>
+                        <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-redes' ? 'rotate-180' : ''}`} size={20} />
+                    </button>
+                    {openSection === 'sec-redes' && (
+                    <div className="bg-white p-6 md:p-10 rounded-xl border border-border shadow-sm mt-2 animate-fade-in">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-textLight mb-2">¿Pertenece a otra red supraterritorial?</label>
                                 <select name="pertenece_red_supraterritorial" value={profileData.datos_adicionales.pertenece_red_supraterritorial || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30">
@@ -862,14 +890,12 @@ function ProfileForm() {
                                 </select>
                             </div>
                         </div>
-
                         {profileData.datos_adicionales.pertenece_red_supraterritorial === "Sí" && (
                             <div>
                                 <label className="block text-sm font-medium text-textLight mb-2">¿Cuál(es)?</label>
                                 <input type="text" name="redes_supraterritoriales" value={profileData.datos_adicionales.redes_supraterritoriales || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre de la(s) red(es)" />
                             </div>
                         )}
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
                             <div>
                                 <label className="block text-sm font-medium text-textLight mb-2">Contacto principal para intercooperación</label>
@@ -881,7 +907,7 @@ function ProfileForm() {
                             </div>
                         </div>
                     </div>
-                </div>
+                    </div>
                     )}
                 </div>
                 <div id="sec-autoevaluacion" className="scroll-mt-24">
