@@ -186,7 +186,7 @@ function ProfileForm() {
                     // Migrate old short labels → new full labels for intercoop arrays
                     const INTERCOOP_KEY_MIGRATION = {
                         ...MADUREZ_KEY_MIGRATION,
-                        "Logística y distribución": "Logística y distribución (rutas, formatos, paletización, envases)",
+                        "Logística y distribución (rutas, formatos, paletización, envases)": "Logística y distribución",
                         "Calidad y trazabilidad": "Calidad, trazabilidad y gestión de auditorías",
                         "Marketing y comunicación": "Marketing, comunicación y visibilidad",
                         "Gestión administrativa": "Gestión administrativa, fiscal y contable",
@@ -343,11 +343,11 @@ function ProfileForm() {
     const SECTION_NAV = useMemo(() => [
         { id: 'sec-identidad', label: 'Datos de identificación', icon: '🏢' },
         { id: 'sec-composicion', label: 'Composición y estructura del equipo', icon: '👥' },
-        { id: 'sec-gobernanza', label: 'Gobernanza y organización', icon: '🏛️' },
+        { id: 'sec-gobernanza', label: 'Gobernanza y organización formal', icon: '🏛️' },
         { id: 'sec-actividad', label: 'Actividad, servicios y razón de ser', icon: '🔧' },
         { id: 'sec-abastecimiento', label: 'Modelo de abastecimiento y regulación', icon: '📦' },
         { id: 'sec-infraestructuras', label: 'Infraestructuras y activos clave', icon: '🏗️' },
-        { id: 'sec-redes', label: 'Redes y contacto', icon: '🌐' },
+        { id: 'sec-redes', label: 'Redes y contacto para intercooperación', icon: '🌐' },
         { id: 'sec-autoevaluacion', label: 'Autoevaluación técnica', icon: '🔬' },
         { id: 'sec-intercoop', label: 'Intercooperación técnica', icon: '🤝' },
     ], []);
@@ -702,7 +702,7 @@ function ProfileForm() {
                 <div id="sec-gobernanza" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-gobernanza')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-gobernanza' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🏛️</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Gobernanza y organización</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Gobernanza y organización formal</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-gobernanza' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-gobernanza' && (
@@ -904,7 +904,7 @@ function ProfileForm() {
                 <div id="sec-redes" className="scroll-mt-24">
                     <button type="button" onClick={() => toggleSection('sec-redes')} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all ${openSection === 'sec-redes' ? 'bg-white shadow-sm border border-border' : 'bg-white/60 hover:bg-white border border-transparent hover:border-border'}`}>
                         <span className="text-xl">🌐</span>
-                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Redes y contacto</span>
+                        <span className="text-lg font-bold font-serif text-text flex-1 text-left">Redes y contacto para intercooperación</span>
                         <ChevronDown className={`text-textLight transition-transform duration-200 ${openSection === 'sec-redes' ? 'rotate-180' : ''}`} size={20} />
                     </button>
                     {openSection === 'sec-redes' && (

@@ -5,6 +5,14 @@ import { toast } from "react-hot-toast";
 import { teamService } from "@/lib/supabaseService";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
+const ROL_RED_OPTIONS = [
+    "",
+    "Contacto intercoop. técnica",
+    "Contacto intercoop. económica",
+    "Contacto grupo motor",
+    "Contacto grupo gobernanza",
+];
+
 /**
  * TeamMemberList — Shared CRUD component for team members.
  * Used in both CAD profile (cad_users_mapping) and admin profile (admin_users_mapping).
@@ -27,7 +35,7 @@ export default function TeamMemberList({
     subtitle = "",
     addLabel = "Añadir Persona",
 }) {
-    const [newMember, setNewMember] = useState({ user_email: "", nombre_persona: "", perfil_rol: "", telefono: "" });
+    const [newMember, setNewMember] = useState({ user_email: "", nombre_persona: "", perfil_rol: "", telefono: "", rol_red: "" });
     const [editingMemberId, setEditingMemberId] = useState(null);
     const [editMemberData, setEditMemberData] = useState({});
     const [deleteTarget, setDeleteTarget] = useState({ id: null, email: "" });
@@ -49,7 +57,7 @@ export default function TeamMemberList({
         try {
             const data = await teamService.add(isAdmin, newMember, cadId);
             onMembersChange([...members, data]);
-            setNewMember({ user_email: "", nombre_persona: "", perfil_rol: "", telefono: "" });
+            setNewMember({ user_email: "", nombre_persona: "", perfil_rol: "", telefono: "", rol_red: "" });
             toast.success("Persona añadida correctamente");
         } catch (err) {
             toast.error(err.message);
@@ -123,6 +131,10 @@ export default function TeamMemberList({
                                     <input type="email" placeholder="Correo (Login)" value={editMemberData.user_email || ''} onChange={e => setEditMemberData({ ...editMemberData, user_email: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
                                     <input type="text" placeholder="Cargo o Rol" value={editMemberData.perfil_rol || ''} onChange={e => setEditMemberData({ ...editMemberData, perfil_rol: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
                                     <input type="text" placeholder="Teléfono" value={editMemberData.telefono || ''} onChange={e => setEditMemberData({ ...editMemberData, telefono: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full" />
+                                    <select value={editMemberData.rol_red || ''} onChange={e => setEditMemberData({ ...editMemberData, rol_red: e.target.value })} className="px-3 py-1.5 rounded-md border border-border focus:ring-1 focus:ring-accent bg-white text-sm w-full">
+                                        <option value="">Rol en la Red (opcional)</option>
+                                        {ROL_RED_OPTIONS.filter(Boolean).map(r => <option key={r} value={r}>{r}</option>)}
+                                    </select>
                                 </div>
                                 <div className="flex items-center gap-2 justify-end">
                                     <button type="button" onClick={handleEditCancel} className="text-xs px-3 py-1.5 border border-border text-warmGray rounded-md hover:bg-sand transition-colors font-medium">Cancelar</button>
@@ -134,6 +146,7 @@ export default function TeamMemberList({
                                 <div className="flex-1">
                                     <div className="font-bold text-text">{member.nombre_persona} <span className="font-normal text-sm text-textLight ml-2">({member.perfil_rol || 'Sin rol definido'})</span></div>
                                     <div className="text-sm text-textLight mt-1">{member.user_email} {member.telefono && `• Tel: ${member.telefono}`}</div>
+                                    {member.rol_red && <div className="text-xs text-forest font-medium mt-1 bg-forest/10 px-2 py-0.5 rounded-full w-fit">{member.rol_red}</div>}
                                 </div>
                                 <div className="flex items-center gap-1 shrink-0">
                                     <button type="button" onClick={() => handleEditStart(member)} className="text-forest hover:bg-forest/10 p-2 rounded-lg transition-colors" title="Editar datos">
@@ -157,6 +170,10 @@ export default function TeamMemberList({
                     <input type="email" placeholder="Correo electrónico (Login)" value={newMember.user_email} onChange={e => setNewMember({ ...newMember, user_email: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
                     <input type="text" placeholder="Cargo o Rol" value={newMember.perfil_rol} onChange={e => setNewMember({ ...newMember, perfil_rol: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
                     <input type="text" placeholder="Teléfono" value={newMember.telefono} onChange={e => setNewMember({ ...newMember, telefono: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm" />
+                    <select value={newMember.rol_red} onChange={e => setNewMember({ ...newMember, rol_red: e.target.value })} className="px-4 py-2 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-white text-sm">
+                        <option value="">Rol en la Red (opcional)</option>
+                        {ROL_RED_OPTIONS.filter(Boolean).map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
                 </div>
                 <button type="button" onClick={handleAdd} className="text-sm bg-accent text-text font-bold px-4 py-2 rounded-lg hover:bg-accentHover transition-colors flex items-center gap-2 w-full justify-center md:w-auto">
                     <PlusCircle size={16} /> {addLabel}

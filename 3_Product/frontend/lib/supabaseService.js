@@ -212,6 +212,7 @@ export const teamService = {
                 user_email: updates.user_email,
                 perfil_rol: updates.perfil_rol,
                 telefono: updates.telefono,
+                rol_red: updates.rol_red,
             })
             .eq("id", memberId);
 
