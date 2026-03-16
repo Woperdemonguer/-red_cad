@@ -1067,17 +1067,21 @@ function ProfileForm() {
                     )}
                 </div>
 
-                {/* Submit */}
-                <div className="flex justify-end pt-4 pb-10">
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="bg-forest text-white px-8 py-3 rounded-xl font-medium tracking-wide hover:bg-forestLight transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 shadow-lg hover:shadow-xl"
-                    >
-                        {saving ? "Guardando..." : <><Save size={20} /> Guardar Perfil de Red Completo</>}
-                    </button>
+                {/* Sticky Save Footer */}
+                <div className="fixed bottom-0 left-0 md:left-72 right-0 bg-white/95 backdrop-blur-sm border-t border-border px-[5%] py-3 z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+                    <div className="flex justify-center items-center max-w-4xl mx-auto">
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="bg-forest text-white px-8 py-3 rounded-xl font-medium tracking-wide hover:bg-forestLight transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 shadow-lg hover:shadow-xl"
+                        >
+                            {saving ? "Guardando..." : <><Save size={20} /> Guardar perfil de red completo</>}
+                        </button>
+                    </div>
                 </div>
             </form>
+            {/* Spacer for sticky footer */}
+            <div className="h-20"></div>
         </div>
     );
 }
