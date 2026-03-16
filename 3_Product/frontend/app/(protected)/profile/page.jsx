@@ -1028,49 +1028,53 @@ function ProfileForm() {
                                 {AMBITOS_INTERCOOP.map(ambito => (
                                     <label key={`comp_${ambito}`} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors relative">
                                         <input type="checkbox" checked={profileData.intercoop_compartir.includes(ambito)} onChange={() => handleCheckbox('intercoop_compartir', ambito)} className="mt-1 accent-forest w-4 h-4 rounded border-border flex-shrink-0" />
-                                        <span className="leading-snug">{ambito}</span>
-                                        {INTERCOOP_TOOLTIPS[ambito] && (
-                                            <div
-                                                onMouseEnter={() => setActiveTooltip(`comp_${ambito}`)}
-                                                onMouseLeave={() => setActiveTooltip(null)}
-                                                className="cursor-pointer text-sage hover:text-forest transition-colors ml-1 mt-[2px] relative z-10"
-                                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                                            >
-                                                <HelpCircle size={14} />
-                                                {activeTooltip === `comp_${ambito}` && (
-                                                    <div className="absolute top-full left-0 mt-1 bg-text text-white p-2 text-xs rounded shadow w-48 font-normal whitespace-pre-wrap">
-                                                        {INTERCOOP_TOOLTIPS[ambito]}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                        <span className="leading-snug">
+                                            {ambito}
+                                            {INTERCOOP_TOOLTIPS[ambito] && (
+                                                <span
+                                                    onMouseEnter={() => setActiveTooltip(`comp_${ambito}`)}
+                                                    onMouseLeave={() => setActiveTooltip(null)}
+                                                    className="cursor-pointer text-sage hover:text-forest transition-colors ml-1 relative inline-block align-middle"
+                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                >
+                                                    <HelpCircle size={14} />
+                                                    {activeTooltip === `comp_${ambito}` && (
+                                                        <div className="absolute top-full left-0 mt-1 bg-text text-white p-2 text-xs rounded shadow w-48 font-normal whitespace-pre-wrap z-50">
+                                                            {INTERCOOP_TOOLTIPS[ambito]}
+                                                        </div>
+                                                    )}
+                                                </span>
+                                            )}
+                                        </span>
                                     </label>
                                 ))}
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-text mb-3">¿En qué ámbitos se necesitaría más apoyo o formación?</label>
+                            <label className="block text-sm font-bold text-text mb-3">¿En qué ámbitos se necesitaría respaldo técnico?</label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
                                 {AMBITOS_INTERCOOP.map(ambito => (
                                     <label key={`apoyo_${ambito}`} className="flex items-start gap-3 text-sm text-textLight cursor-pointer hover:text-text transition-colors relative">
                                         <input type="checkbox" checked={profileData.intercoop_apoyo_necesario.includes(ambito)} onChange={() => handleCheckbox('intercoop_apoyo_necesario', ambito)} className="mt-1 accent-forest w-4 h-4 rounded border-border flex-shrink-0" />
-                                        <span className="leading-snug">{ambito}</span>
-                                        {INTERCOOP_TOOLTIPS[ambito] && (
-                                            <div
-                                                onMouseEnter={() => setActiveTooltip(`apoyo_${ambito}`)}
-                                                onMouseLeave={() => setActiveTooltip(null)}
-                                                className="cursor-pointer text-sage hover:text-forest transition-colors ml-1 mt-[2px] relative z-10"
-                                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                                            >
-                                                <HelpCircle size={14} />
-                                                {activeTooltip === `apoyo_${ambito}` && (
-                                                    <div className="absolute top-full left-0 mt-1 bg-text text-white p-2 text-xs rounded shadow w-48 font-normal whitespace-pre-wrap">
-                                                        {INTERCOOP_TOOLTIPS[ambito]}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                        <span className="leading-snug">
+                                            {ambito}
+                                            {INTERCOOP_TOOLTIPS[ambito] && (
+                                                <span
+                                                    onMouseEnter={() => setActiveTooltip(`apoyo_${ambito}`)}
+                                                    onMouseLeave={() => setActiveTooltip(null)}
+                                                    className="cursor-pointer text-sage hover:text-forest transition-colors ml-1 relative inline-block align-middle"
+                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                >
+                                                    <HelpCircle size={14} />
+                                                    {activeTooltip === `apoyo_${ambito}` && (
+                                                        <div className="absolute top-full left-0 mt-1 bg-text text-white p-2 text-xs rounded shadow w-48 font-normal whitespace-pre-wrap z-50">
+                                                            {INTERCOOP_TOOLTIPS[ambito]}
+                                                        </div>
+                                                    )}
+                                                </span>
+                                            )}
+                                        </span>
                                     </label>
                                 ))}
                             </div>

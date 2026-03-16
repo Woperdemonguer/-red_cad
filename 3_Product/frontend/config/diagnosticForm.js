@@ -180,7 +180,7 @@ export const blocks = [
   // ─── BLOQUE 4: AUTOEVALUACIÓN E INTERCAMBIOS TÉCNICOS ───
   {
     id: 4,
-    title: "Autoevaluación y necesidades de intercooperación técnica",
+    title: "Necesidades de intercooperación técnica",
     icon: "🎓",
     intro: "Cada agrupación tiene fortalezas en determinados ámbitos y necesidades de mejora en otros. Conocer esto permite que las agrupaciones se encuentren entre sí y que se diseñen formaciones y acompañamientos adaptados.",
     questions: [

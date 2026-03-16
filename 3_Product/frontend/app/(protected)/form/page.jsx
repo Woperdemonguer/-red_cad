@@ -309,7 +309,7 @@ function FormComponent() {
                   <div key={q.id} className="mt-4 first:mt-0">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="h-px flex-1 bg-border" />
-                      <span className="text-xs text-warmGray uppercase tracking-[1.5px] font-semibold whitespace-nowrap">{q.title}</span>
+                      <span className="text-xs text-text/60 uppercase tracking-[1.5px] font-semibold whitespace-nowrap">{q.title}</span>
                       <div className="h-px flex-1 bg-border" />
                     </div>
                   </div>
