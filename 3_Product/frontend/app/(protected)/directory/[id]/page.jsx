@@ -5,6 +5,16 @@ import Link from "next/link";
 import { profileService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
+/** Safely display a value that might be a JS array, a JSON string array, or a plain string */
+function displayList(val) {
+    if (!val) return null;
+    if (Array.isArray(val)) return val.join(', ');
+    if (typeof val === 'string' && val.startsWith('[')) {
+        try { return JSON.parse(val).join(', '); } catch { /* fall through */ }
+    }
+    return val;
+}
+
 export default function CadPublicProfile({ params }) {
     const [cad, setCad] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -76,7 +86,7 @@ export default function CadPublicProfile({ params }) {
                         )}
                         {cad.forma_juridica && (
                             <span className="flex items-center gap-1.5 px-3 py-1 bg-sand border border-border rounded-full">
-                                <Building size={16} /> {Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica}
+                                <Building size={16} /> {displayList(cad.forma_juridica)}
                             </span>
                         )}
                         {cad.num_socios_productoras && (
@@ -131,7 +141,7 @@ export default function CadPublicProfile({ params }) {
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
                                 {[
                                     { label: "Territorio", value: cad.territorio },
-                                    { label: "Forma jurídica", value: Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica },
+                                    { label: "Forma jurídica", value: displayList(cad.forma_juridica) },
                                     { label: "Año de constitución", value: cad.ano_constitucion },
                                     { label: "Municipio sede", value: cad.datos_adicionales?.municipio_sede },
                                     { label: "Email público", value: cad.email_contacto },
@@ -159,7 +169,7 @@ export default function CadPublicProfile({ params }) {
                                     { label: "Socias productoras", value: cad.num_socios_productoras },
                                     { label: "Socias activas", value: cad.datos_adicionales?.num_socias_activas },
                                     { label: "Personas en plantilla", value: cad.num_personas_trabajadoras },
-                                    { label: "Modelo de gobernanza", value: Array.isArray(cad.tipo_gobernanza) ? cad.tipo_gobernanza.join(', ') : cad.tipo_gobernanza },
+                                    { label: "Modelo de gobernanza", value: displayList(cad.tipo_gobernanza) },
                                 ].filter(f => f.value).map((field, i) => (
                                     <div key={i}>
                                         <span className="text-textLight block text-xs uppercase tracking-wider mb-1">{field.label}</span>

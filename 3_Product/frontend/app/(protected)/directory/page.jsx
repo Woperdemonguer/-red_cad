@@ -5,6 +5,16 @@ import Link from "next/link";
 import { profileService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
+/** Safely display a value that might be a JS array, a JSON string array, or a plain string */
+function displayList(val) {
+    if (!val) return null;
+    if (Array.isArray(val)) return val.join(', ');
+    if (typeof val === 'string' && val.startsWith('[')) {
+        try { return JSON.parse(val).join(', '); } catch { /* fall through */ }
+    }
+    return val;
+}
+
 export default function DirectoryPage() {
     const [cads, setCads] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -137,7 +147,7 @@ export default function DirectoryPage() {
                                         )}
                                         {cad.forma_juridica && (
                                             <span className="flex items-center gap-1.5 px-3 py-1 bg-sand border border-border rounded-full">
-                                                <Building size={14} /> {Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica}
+                                                <Building size={14} /> {displayList(cad.forma_juridica)}
                                             </span>
                                         )}
                                         {cad.num_socios_productoras && (
