@@ -103,7 +103,7 @@ export default function CadPublicProfile({ params }) {
                 {[
                     { id: "general", label: "General", icon: <LayoutGrid size={18} /> },
                     { id: "actividad", label: "Actividad y operaciones", icon: <Wrench size={18} /> },
-                    { id: "diagnostico", label: "Autodiagnóstico e intercooperación", icon: <Microscope size={18} /> },
+                    { id: "diagnostico", label: "Intercooperación técnica", icon: <Microscope size={18} /> },
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -190,21 +190,6 @@ export default function CadPublicProfile({ params }) {
                         </div>
                     </div>
 
-                    {/* Highlights: Fortalezas y Retos */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-sage/10 p-6 rounded-xl border border-forest/20">
-                            <h4 className="text-sm font-bold text-forest uppercase tracking-wider mb-3">Mayores fortalezas</h4>
-                            <p className="text-sm text-text font-medium italic">
-                                {cad.madurez_fortalezas ? `"${cad.madurez_fortalezas}"` : "Pendiente de completar"}
-                            </p>
-                        </div>
-                        <div className="bg-sand/30 p-6 rounded-xl border border-border">
-                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider mb-3">Mayores retos</h4>
-                            <p className="text-sm text-text font-medium italic">
-                                {cad.madurez_cuellos_botella ? `"${cad.madurez_cuellos_botella}"` : "Pendiente de completar"}
-                            </p>
-                        </div>
-                    </div>
                 </div>
             )}
 
