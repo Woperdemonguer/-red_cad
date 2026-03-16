@@ -12,6 +12,7 @@ import {
     PERFILES_EQUIPO_OPTIONS, 
     MADUREZ_CATEGORIAS, 
     MADUREZ_TOOLTIPS, 
+    MADUREZ_KEY_MIGRATION,
     AMBITOS_INTERCOOP, 
     INTERCOOP_TOOLTIPS,
     ACTIVIDADES_CAD_OPTIONS,
@@ -174,11 +175,30 @@ function ProfileForm() {
                 if (cancelled) return;
 
                 if (profile) {
+                    // Migrate old short keys → new full labels for madurez_evaluacion
+                    const rawMadurez = profile.madurez_evaluacion || {};
+                    const migratedMadurez = {};
+                    for (const [key, val] of Object.entries(rawMadurez)) {
+                        const newKey = MADUREZ_KEY_MIGRATION[key] || key;
+                        migratedMadurez[newKey] = val;
+                    }
+
+                    // Migrate old short labels → new full labels for intercoop arrays
+                    const INTERCOOP_KEY_MIGRATION = {
+                        ...MADUREZ_KEY_MIGRATION,
+                        "Logística y distribución": "Logística y distribución (rutas, formatos, paletización, envases)",
+                        "Calidad y trazabilidad": "Calidad, trazabilidad y gestión de auditorías",
+                        "Marketing y comunicación": "Marketing, comunicación y visibilidad",
+                        "Gestión administrativa": "Gestión administrativa, fiscal y contable",
+                        "Restauración colectiva y compra pública": "Acceso a restauración colectiva y compra pública",
+                    };
+                    const migrateArray = (arr) => (arr || []).map(v => INTERCOOP_KEY_MIGRATION[v] || v);
+
                     setProfileData({
                         ...profile,
-                        madurez_evaluacion: profile.madurez_evaluacion || {},
-                        intercoop_compartir: profile.intercoop_compartir || [],
-                        intercoop_apoyo_necesario: profile.intercoop_apoyo_necesario || [],
+                        madurez_evaluacion: migratedMadurez,
+                        intercoop_compartir: migrateArray(profile.intercoop_compartir),
+                        intercoop_apoyo_necesario: migrateArray(profile.intercoop_apoyo_necesario),
                         perfiles_equipo: profile.perfiles_equipo || [],
                         datos_adicionales: {
                             municipio_sede: "",
