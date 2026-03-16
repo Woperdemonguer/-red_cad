@@ -926,16 +926,6 @@ function ProfileForm() {
                                 <input type="text" name="redes_supraterritoriales" value={profileData.datos_adicionales.redes_supraterritoriales || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre de la(s) red(es)" />
                             </div>
                         )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                            <div>
-                                <label className="block text-sm font-medium text-textLight mb-2">Contacto principal para intercooperación</label>
-                                <input type="text" name="contacto_intercoop" value={profileData.datos_adicionales.contacto_intercoop || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre, cargo, email, teléfono" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-textLight mb-2">Contacto secundario (opcional)</label>
-                                <input type="text" name="contacto_intercoop_secundario" value={profileData.datos_adicionales.contacto_intercoop_secundario || ''} onChange={handleDatosChange} className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-accent bg-sand/30" placeholder="Nombre, cargo, email, teléfono" />
-                            </div>
-                        </div>
                     </div>
                     </div>
                     )}

@@ -389,25 +389,6 @@ export default function CadPublicProfile({ params }) {
                                     )}
                                 </div>
                             </div>
-                            {(cad.datos_adicionales?.contacto_intercoop || cad.datos_adicionales?.contacto_intercoop_secundario) && (
-                                <div className="pt-4 border-t border-border">
-                                    <span className="text-textLight block text-xs uppercase tracking-wider mb-3">Contactos para intercooperación</span>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {cad.datos_adicionales?.contacto_intercoop && (
-                                            <div className="bg-sand/30 p-4 rounded-lg border border-border">
-                                                <span className="text-xs font-bold text-textLight uppercase tracking-wider block mb-1">Contacto principal</span>
-                                                <p className="text-sm text-text font-medium">{cad.datos_adicionales.contacto_intercoop}</p>
-                                            </div>
-                                        )}
-                                        {cad.datos_adicionales?.contacto_intercoop_secundario && (
-                                            <div className="bg-sand/30 p-4 rounded-lg border border-border">
-                                                <span className="text-xs font-bold text-textLight uppercase tracking-wider block mb-1">Contacto secundario</span>
-                                                <p className="text-sm text-text font-medium">{cad.datos_adicionales.contacto_intercoop_secundario}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
