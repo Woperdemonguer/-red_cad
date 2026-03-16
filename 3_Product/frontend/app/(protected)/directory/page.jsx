@@ -5,14 +5,27 @@ import Link from "next/link";
 import { profileService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-/** Safely display a value that might be a JS array, a JSON string array, or a plain string */
+/** Safely display a value that might be a JS array, a JSON-string array, or a plain string.
+ *  Also handles corrupted arrays where strings were spread into individual characters. */
 function displayList(val) {
     if (!val) return null;
-    if (Array.isArray(val)) return val.join(', ');
-    if (typeof val === 'string' && val.startsWith('[')) {
-        try { return JSON.parse(val).join(', '); } catch { /* fall through */ }
+    let arr = val;
+    if (typeof val === 'string') {
+        if (val.startsWith('[')) {
+            try { arr = JSON.parse(val); } catch { return val; }
+        } else {
+            return val;
+        }
     }
-    return val;
+    if (!Array.isArray(arr)) return String(val);
+    // Detect corrupted arrays (mostly single-character entries from spread bug)
+    const singleChars = arr.filter(item => typeof item === 'string' && item.length <= 1);
+    if (arr.length > 3 && singleChars.length > arr.length * 0.5) {
+        const fullItems = arr.filter(item => typeof item === 'string' && item.length > 1);
+        if (fullItems.length > 0) return fullItems.join(', ');
+        return arr.join('');
+    }
+    return arr.join(', ');
 }
 
 export default function DirectoryPage() {

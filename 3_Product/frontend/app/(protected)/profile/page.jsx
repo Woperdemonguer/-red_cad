@@ -232,8 +232,18 @@ function ProfileForm() {
         setIsDirty(true);
     };
 
+    /** Safely convert a value to a proper JS array (handles JSON strings from Supabase) */
+    const ensureArray = (val) => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string' && val.startsWith('[')) {
+            try { return JSON.parse(val); } catch { /* fall through */ }
+        }
+        return [val]; // wrap plain string in array
+    };
+
     const handleCheckbox = (campo, valor) => {
-        const currentList = profileData[campo] || [];
+        const currentList = ensureArray(profileData[campo]);
         const newList = currentList.includes(valor)
             ? currentList.filter(item => item !== valor)
             : [...currentList, valor];
@@ -252,7 +262,7 @@ function ProfileForm() {
 
     // Handler for datos_adicionales checkbox lists
     const handleDatosCheckbox = (campo, valor) => {
-        const currentList = profileData.datos_adicionales[campo] || [];
+        const currentList = ensureArray(profileData.datos_adicionales?.[campo]);
         const newList = currentList.includes(valor)
             ? currentList.filter(item => item !== valor)
             : [...currentList, valor];
