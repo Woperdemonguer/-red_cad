@@ -157,6 +157,7 @@ export default function CadPublicProfile({ params }) {
                                     { label: "Territorio", value: cad.territorio },
                                     { label: "Forma jurídica", value: displayList(cad.forma_juridica) },
                                     { label: "Año de constitución", value: cad.ano_constitucion },
+                                    { label: "Inicio de actividad", value: cad.datos_adicionales?.inicio_actividad },
                                     { label: "Municipio sede", value: cad.datos_adicionales?.municipio_sede },
                                     { label: "Email público", value: cad.email_contacto },
                                     { label: "Teléfono público", value: cad.telefono },
@@ -167,6 +168,9 @@ export default function CadPublicProfile({ params }) {
                                     </div>
                                 ))}
                             </div>
+                            {cad.forma_juridica_otros && (
+                                <p className="mt-3 text-xs text-textLight italic border-t border-border pt-3">Otros: {cad.forma_juridica_otros}</p>
+                            )}
                         </div>
                     </div>
 
@@ -199,6 +203,9 @@ export default function CadPublicProfile({ params }) {
                                             <span key={i} className="px-3 py-1.5 bg-sand text-text text-xs font-medium rounded-full border border-border">{p}</span>
                                         ))}
                                     </div>
+                                    {cad.perfiles_equipo_otros && (
+                                        <p className="mt-2 text-xs text-textLight italic">Otros: {cad.perfiles_equipo_otros}</p>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -228,6 +235,9 @@ export default function CadPublicProfile({ params }) {
                                 </div>
                             ) : (
                                 <p className="text-sm text-textLight italic">Información pendiente de completar</p>
+                            )}
+                            {cad.datos_adicionales?.actividades_otros && (
+                                <p className="mt-3 text-xs text-textLight italic border-t border-border pt-3">Otros: {cad.datos_adicionales.actividades_otros}</p>
                             )}
                             {cad.datos_adicionales?.motivo_creacion && (
                                 <div className="mt-5 pt-5 border-t border-border">
@@ -266,6 +276,9 @@ export default function CadPublicProfile({ params }) {
                                             <span key={i} className="px-3 py-1.5 bg-sand text-text text-xs font-medium rounded-full border border-border">{inf}</span>
                                         ))}
                                     </div>
+                                    {cad.datos_adicionales?.infraestructuras_otros && (
+                                        <p className="mt-2 text-xs text-textLight italic">Otros: {cad.datos_adicionales.infraestructuras_otros}</p>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -357,6 +370,44 @@ export default function CadPublicProfile({ params }) {
                                 <p className="text-sm text-forest mb-2"><span className="font-bold">Disposición a red:</span> {cad.intercoop_disposicion || <span className="italic font-normal">Pendiente</span>}</p>
                                 <p className="text-sm text-forest"><span className="font-bold">Contactos técnicos:</span> {cad.intercoop_referentes || <span className="italic font-normal">Pendiente</span>}</p>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Redes y contacto */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
+                            <LinkIcon className="text-warmGray" size={18} />
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Redes y contacto de intercooperación</h4>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                                <div>
+                                    <span className="text-textLight block text-xs uppercase tracking-wider mb-1">¿Pertenece a red supraterritorial?</span>
+                                    <span className="font-medium text-text">{cad.datos_adicionales?.pertenece_red_supraterritorial || <span className="italic text-textLight font-normal">Pendiente</span>}</span>
+                                    {cad.datos_adicionales?.redes_supraterritoriales && (
+                                        <p className="mt-1 text-xs text-textLight">Red(es): {cad.datos_adicionales.redes_supraterritoriales}</p>
+                                    )}
+                                </div>
+                            </div>
+                            {(cad.datos_adicionales?.contacto_intercoop || cad.datos_adicionales?.contacto_intercoop_secundario) && (
+                                <div className="pt-4 border-t border-border">
+                                    <span className="text-textLight block text-xs uppercase tracking-wider mb-3">Contactos para intercooperación</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {cad.datos_adicionales?.contacto_intercoop && (
+                                            <div className="bg-sand/30 p-4 rounded-lg border border-border">
+                                                <span className="text-xs font-bold text-textLight uppercase tracking-wider block mb-1">Contacto principal</span>
+                                                <p className="text-sm text-text font-medium">{cad.datos_adicionales.contacto_intercoop}</p>
+                                            </div>
+                                        )}
+                                        {cad.datos_adicionales?.contacto_intercoop_secundario && (
+                                            <div className="bg-sand/30 p-4 rounded-lg border border-border">
+                                                <span className="text-xs font-bold text-textLight uppercase tracking-wider block mb-1">Contacto secundario</span>
+                                                <p className="text-sm text-text font-medium">{cad.datos_adicionales.contacto_intercoop_secundario}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
