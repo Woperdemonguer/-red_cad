@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Users, MapPin, Building, Microscope, Link as LinkIcon, ArrowLeft, FileText, LayoutGrid, Wrench, Landmark } from "lucide-react";
+import { Users, MapPin, Building, Microscope, Link as LinkIcon, ArrowLeft, LayoutGrid, Wrench, Landmark } from "lucide-react";
 import Link from "next/link";
 import { profileService } from "@/lib/supabaseService";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -9,7 +9,7 @@ export default function CadPublicProfile({ params }) {
     const [cad, setCad] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeTab, setActiveTab] = useState("resumen");
+    const [activeTab, setActiveTab] = useState("general");
 
     useEffect(() => {
         async function fetchProfile() {
@@ -88,27 +88,29 @@ export default function CadPublicProfile({ params }) {
 
                 </div>
             </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-border mt-8">
-                <button
-                    onClick={() => setActiveTab("resumen")}
-                    className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "resumen" ? "border-accent text-accent bg-accent/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
-                >
-                    <LayoutGrid size={18} /> Resumen Ejecutivo
-                </button>
-                <button
-                    onClick={() => setActiveTab("detalle")}
-                    className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "detalle" ? "border-accent text-accent bg-accent/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
-                >
-                    <FileText size={18} /> Perfil en Detalle
-                </button>
+            {/* Tabs — scrollable on mobile */}
+            <div className="flex overflow-x-auto border-b border-border mt-8 -mx-2 px-2 scrollbar-hide">
+                {[
+                    { id: "general", label: "General", icon: <LayoutGrid size={18} /> },
+                    { id: "actividad", label: "Actividad y operaciones", icon: <Wrench size={18} /> },
+                    { id: "diagnostico", label: "Autodiagnóstico e intercooperación", icon: <Microscope size={18} /> },
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-5 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === tab.id ? "border-accent text-accent bg-accent/5" : "border-transparent text-textLight hover:text-text hover:bg-sand/30"}`}
+                    >
+                        {tab.icon} {tab.label}
+                    </button>
+                ))}
             </div>
 
-            {/* Tab Content: Resumen */}
-            {activeTab === "resumen" && (
+            {/* ────────────────────────────────────────────── */}
+            {/* Tab 1: General                                */}
+            {/* ────────────────────────────────────────────── */}
+            {activeTab === "general" && (
                 <div className="space-y-8 mt-8 animate-fade-in">
-                    {/* About */}
+                    {/* Descripción */}
                     <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm p-8">
                         <h3 className="text-xl font-bold font-serif text-text mb-4 flex items-center gap-2">
                             <Building size={20} className="text-warmGray" /> Sobre la organización
@@ -118,247 +120,233 @@ export default function CadPublicProfile({ params }) {
                         </p>
                     </div>
 
-                    {/* Key Stats Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {[
-                            { label: "Territorio", value: cad.territorio },
-                            { label: "Forma Jurídica", value: Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica },
-                            { label: "Socias Productoras", value: cad.num_socios_productoras },
-                            { label: "Año de Constitución", value: cad.ano_constitucion },
-                            { label: "Personas Trabajadoras", value: cad.num_personas_trabajadoras },
-                            { label: "Gobernanza", value: Array.isArray(cad.tipo_gobernanza) ? cad.tipo_gobernanza.join(', ') : cad.tipo_gobernanza },
-                            { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
-                            { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
-                            { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
-                        ].filter(s => s.value).map((stat, i) => (
-                            <div key={i} className="bg-sand rounded-xl border border-border p-5 text-center shadow-sm">
-                                <p className="text-xs text-textLight uppercase tracking-wider mb-1">{stat.label}</p>
-                                <p className="text-lg font-bold text-text">{stat.value}</p>
+                    {/* Datos de identificación — full width grid */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                <Building size={16} /> Datos de identificación
+                            </h4>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
+                                {[
+                                    { label: "Territorio", value: cad.territorio },
+                                    { label: "Forma jurídica", value: Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica },
+                                    { label: "Año de constitución", value: cad.ano_constitucion },
+                                    { label: "Municipio sede", value: cad.datos_adicionales?.municipio_sede },
+                                    { label: "Email público", value: cad.email_contacto },
+                                    { label: "Teléfono público", value: cad.telefono },
+                                ].filter(f => f.value).map((field, i) => (
+                                    <div key={i}>
+                                        <span className="text-textLight block text-xs uppercase tracking-wider mb-1">{field.label}</span>
+                                        <span className="font-medium text-text">{field.value}</span>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
                     </div>
 
-                    {/* Strengths, Challenges & Intercoop */}
+                    {/* Composición y equipo — full width grid */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                <Users size={16} /> Composición y equipo
+                            </h4>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
+                                {[
+                                    { label: "Socias productoras", value: cad.num_socios_productoras },
+                                    { label: "Socias activas", value: cad.datos_adicionales?.num_socias_activas },
+                                    { label: "Personas en plantilla", value: cad.num_personas_trabajadoras },
+                                    { label: "Modelo de gobernanza", value: Array.isArray(cad.tipo_gobernanza) ? cad.tipo_gobernanza.join(', ') : cad.tipo_gobernanza },
+                                ].filter(f => f.value).map((field, i) => (
+                                    <div key={i}>
+                                        <span className="text-textLight block text-xs uppercase tracking-wider mb-1">{field.label}</span>
+                                        <span className="font-medium text-text">{field.value}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            {cad.perfiles_equipo?.length > 0 && (
+                                <div className="mt-5 pt-5 border-t border-border">
+                                    <span className="text-textLight block text-xs uppercase tracking-wider mb-2">Perfiles del equipo</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {cad.perfiles_equipo.map((p, i) => (
+                                            <span key={i} className="px-3 py-1.5 bg-sand text-text text-xs font-medium rounded-full border border-border">{p}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Highlights: Fortalezas y Retos */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-sage/10 p-6 rounded-xl border border-forest/20">
-                            <h4 className="text-sm font-bold text-forest uppercase tracking-wider mb-3">Mayores Fortalezas</h4>
+                            <h4 className="text-sm font-bold text-forest uppercase tracking-wider mb-3">Mayores fortalezas</h4>
                             <p className="text-sm text-text font-medium italic">
                                 {cad.madurez_fortalezas ? `"${cad.madurez_fortalezas}"` : "Pendiente de completar"}
                             </p>
                         </div>
                         <div className="bg-sand/30 p-6 rounded-xl border border-border">
-                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider mb-3">Mayores Retos</h4>
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider mb-3">Mayores retos</h4>
                             <p className="text-sm text-text font-medium italic">
                                 {cad.madurez_cuellos_botella ? `"${cad.madurez_cuellos_botella}"` : "Pendiente de completar"}
-                            </p>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl border border-border md:col-span-2">
-                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider mb-3">Disposición a Red</h4>
-                            <p className="text-sm text-text font-medium">
-                                {cad.intercoop_disposicion || "Pendiente de completar"}
                             </p>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Tab Content: Detalle Formulario */}
-            {activeTab === "detalle" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 animate-fade-in">
-                    {/* Left Column — grouped by blueprint sections */}
-                    <div className="space-y-6 lg:col-span-1">
-                        {/* Datos de Identificación */}
-                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                            <div className="px-6 py-4 bg-sand/30 border-b border-border">
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                    <Building size={16} /> Datos de Identificación
-                                </h4>
-                            </div>
-                            <div className="p-6 space-y-4 text-sm">
-                                {[
-                                    { label: "Email Público", value: cad.email_contacto },
-                                    { label: "Teléfono Público", value: cad.telefono },
-                                    { label: "Forma Jurídica", value: Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica },
-                                    { label: "Año Constitución", value: cad.ano_constitucion },
-                                    { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
-                                ].map((field, i) => (
-                                    <div key={i}>
-                                        <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
-                                        <span className="font-medium text-text">{field.value || "—"}</span>
-                                    </div>
-                                ))}
-                            </div>
+            {/* ────────────────────────────────────────────── */}
+            {/* Tab 2: Actividad y operaciones                */}
+            {/* ────────────────────────────────────────────── */}
+            {activeTab === "actividad" && (
+                <div className="space-y-8 mt-8 animate-fade-in">
+                    {/* Actividades y servicios */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                <Wrench size={16} /> Actividades y servicios
+                            </h4>
                         </div>
-
-                        {/* Composición y Equipo */}
-                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                            <div className="px-6 py-4 bg-sand/30 border-b border-border">
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                    <Users size={16} /> Composición y Equipo
-                                </h4>
-                            </div>
-                            <div className="p-6 space-y-4 text-sm">
-                                {[
-                                    { label: "Socias Productoras", value: cad.num_socios_productoras },
-                                    { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
-                                    { label: "Personas en Plantilla", value: cad.num_personas_trabajadoras },
-                                    { label: "Modelo de Gobernanza", value: Array.isArray(cad.tipo_gobernanza) ? cad.tipo_gobernanza.join(', ') : cad.tipo_gobernanza },
-                                ].map((field, i) => (
-                                    <div key={i}>
-                                        <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
-                                        <span className="font-medium text-text">{field.value || "—"}</span>
-                                    </div>
-                                ))}
-                                {cad.perfiles_equipo?.length > 0 && (
-                                    <div>
-                                        <span className="text-textLight block text-xs uppercase mb-2">Perfiles del Equipo</span>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {cad.perfiles_equipo.map((p, i) => (
-                                                <span key={i} className="px-2 py-1 bg-sand text-text text-xs rounded-full border border-border">{p}</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Abastecimiento + Infraestructuras */}
-                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                            <div className="px-6 py-4 bg-sand/30 border-b border-border">
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                    <Landmark size={16} /> Abastecimiento e infraestructuras
-                                </h4>
-                            </div>
-                            <div className="p-6 space-y-4 text-sm">
-                                {[
-                                    { label: "Modelo Abastecimiento", value: cad.datos_adicionales?.modelo_abastecimiento },
-                                    { label: "Propiedad Instalaciones", value: cad.propiedad_instalaciones },
-                                    { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
-                                ].map((field, i) => (
-                                    <div key={i}>
-                                        <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>
-                                        <span className="font-medium text-text">{field.value || "—"}</span>
-                                    </div>
-                                ))}
-                                {cad.datos_adicionales?.infraestructuras?.length > 0 && (
-                                    <div>
-                                        <span className="text-textLight block text-xs uppercase mb-2">Activos Clave</span>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {cad.datos_adicionales.infraestructuras.map((inf, i) => (
-                                                <span key={i} className="px-2 py-1 bg-sand text-text text-xs rounded-full border border-border">{inf}</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Activities */}
-                        {cad.datos_adicionales?.actividades_cad?.length > 0 && (
-                            <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                                <div className="px-6 py-4 bg-sand/30 border-b border-border">
-                                    <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
-                                        <Wrench size={16} /> Actividades y servicios
-                                    </h4>
+                        <div className="p-6">
+                            {cad.datos_adicionales?.actividades_cad?.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {cad.datos_adicionales.actividades_cad.map((act, i) => (
+                                        <span key={i} className="px-3 py-1.5 bg-sage/10 text-forest text-xs font-medium rounded-full border border-forest/20">{act}</span>
+                                    ))}
                                 </div>
-                                <div className="p-6">
-                                    <div className="flex flex-wrap gap-2">
-                                        {cad.datos_adicionales.actividades_cad.map((act, i) => (
-                                            <span key={i} className="px-3 py-1.5 bg-sage/10 text-forest text-xs font-medium rounded-full border border-forest/20">{act}</span>
-                                        ))}
-                                    </div>
-                                    {cad.datos_adicionales.motivo_creacion && (
-                                        <div className="mt-4 pt-4 border-t border-border">
-                                            <span className="text-textLight block text-xs uppercase mb-1">Motivo de creación</span>
-                                            <p className="text-sm text-text italic">&quot;{cad.datos_adicionales.motivo_creacion}&quot;</p>
-                                        </div>
-                                    )}
+                            ) : (
+                                <p className="text-sm text-textLight italic">Información pendiente de completar</p>
+                            )}
+                            {cad.datos_adicionales?.motivo_creacion && (
+                                <div className="mt-5 pt-5 border-t border-border">
+                                    <span className="text-textLight block text-xs uppercase tracking-wider mb-1">Motivo de creación</span>
+                                    <p className="text-sm text-text italic">&quot;{cad.datos_adicionales.motivo_creacion}&quot;</p>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
-                    {/* Right Column (Maturity & Intercoop) */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Maturity Matrix */}
-                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                            <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
-                                <Microscope className="text-warmGray" size={18} />
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Autodiagnóstico de madurez técnica</h4>
+                    {/* Modelo de abastecimiento e infraestructuras */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border">
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider flex items-center gap-2">
+                                <Landmark size={16} /> Abastecimiento e infraestructuras
+                            </h4>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-sm">
+                                {[
+                                    { label: "Modelo de abastecimiento", value: cad.datos_adicionales?.modelo_abastecimiento },
+                                    { label: "Propiedad instalaciones", value: cad.propiedad_instalaciones },
+                                    { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
+                                ].filter(f => f.value).map((field, i) => (
+                                    <div key={i}>
+                                        <span className="text-textLight block text-xs uppercase tracking-wider mb-1">{field.label}</span>
+                                        <span className="font-medium text-text">{field.value}</span>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="p-6">
-                                <div className="bg-sand/10 rounded-lg border border-border p-4 text-sm divide-y divide-border">
-                                    {cad.madurez_evaluacion && Object.keys(cad.madurez_evaluacion).length > 0 ? (
-                                        Object.entries(cad.madurez_evaluacion).map(([categoria, valor], i) => (
-                                            <div key={i} className="flex justify-between py-3 items-center">
-                                                <span className="font-medium text-text">{categoria}</span>
-                                                <span className={`px-3 py-1.5 rounded-md text-xs font-bold shadow-sm ${valor.includes("🟢") ? "bg-forest/10 text-forest border border-forest/20" :
-                                                    valor.includes("🟡") ? "bg-accent/10 text-accent border border-accent/20" :
-                                                        valor.includes("🔴") ? "bg-red/10 text-red border border-red/20" : "bg-sand"
-                                                    }`}>
-                                                    {valor}
-                                                </span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-textLight py-6 italic text-center">Evaluación de madurez pendiente de completar por la agrupación.</p>
-                                    )}
+                            {cad.datos_adicionales?.infraestructuras?.length > 0 && (
+                                <div className="mt-5 pt-5 border-t border-border">
+                                    <span className="text-textLight block text-xs uppercase tracking-wider mb-2">Activos clave</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {cad.datos_adicionales.infraestructuras.map((inf, i) => (
+                                            <span key={i} className="px-3 py-1.5 bg-sand text-text text-xs font-medium rounded-full border border-border">{inf}</span>
+                                        ))}
+                                    </div>
                                 </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
-                                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <h4 className="text-sm font-bold text-forest uppercase tracking-wider mb-2">Mayores Fortalezas</h4>
-                                        <p className="text-sm text-text leading-relaxed bg-white p-4 border-l-4 border-forest rounded-r-lg shadow-sm">
-                                            {cad.madurez_fortalezas ? `"${cad.madurez_fortalezas}"` : <span className="italic text-textLight">Pendiente de completar</span>}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-bold text-accent uppercase tracking-wider mb-2">Mayores Retos</h4>
-                                        <p className="text-sm text-text leading-relaxed bg-white p-4 border-l-4 border-accent rounded-r-lg shadow-sm">
-                                            {cad.madurez_cuellos_botella ? `"${cad.madurez_cuellos_botella}"` : <span className="italic text-textLight">Pendiente de completar</span>}
-                                        </p>
-                                    </div>
+            {/* ────────────────────────────────────────────── */}
+            {/* Tab 3: Autodiagnóstico e intercooperación     */}
+            {/* ────────────────────────────────────────────── */}
+            {activeTab === "diagnostico" && (
+                <div className="space-y-8 mt-8 animate-fade-in">
+                    {/* Maturity Matrix */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
+                            <Microscope className="text-warmGray" size={18} />
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Autodiagnóstico de madurez técnica</h4>
+                        </div>
+                        <div className="p-6">
+                            <div className="bg-sand/10 rounded-lg border border-border p-4 text-sm divide-y divide-border">
+                                {cad.madurez_evaluacion && Object.keys(cad.madurez_evaluacion).length > 0 ? (
+                                    Object.entries(cad.madurez_evaluacion).map(([categoria, valor], i) => (
+                                        <div key={i} className="flex justify-between py-3 items-center">
+                                            <span className="font-medium text-text">{categoria}</span>
+                                            <span className={`px-3 py-1.5 rounded-md text-xs font-bold shadow-sm ${valor.includes("🟢") ? "bg-forest/10 text-forest border border-forest/20" :
+                                                valor.includes("🟡") ? "bg-accent/10 text-accent border border-accent/20" :
+                                                    valor.includes("🔴") ? "bg-red/10 text-red border border-red/20" : "bg-sand"
+                                                }`}>
+                                                {valor}
+                                            </span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-textLight py-6 italic text-center">Evaluación de madurez pendiente de completar por la agrupación.</p>
+                                )}
+                            </div>
+
+                            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="text-sm font-bold text-forest uppercase tracking-wider mb-2">Mayores fortalezas</h4>
+                                    <p className="text-sm text-text leading-relaxed bg-white p-4 border-l-4 border-forest rounded-r-lg shadow-sm">
+                                        {cad.madurez_fortalezas ? `"${cad.madurez_fortalezas}"` : <span className="italic text-textLight">Pendiente de completar</span>}
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-accent uppercase tracking-wider mb-2">Mayores retos</h4>
+                                    <p className="text-sm text-text leading-relaxed bg-white p-4 border-l-4 border-accent rounded-r-lg shadow-sm">
+                                        {cad.madurez_cuellos_botella ? `"${cad.madurez_cuellos_botella}"` : <span className="italic text-textLight">Pendiente de completar</span>}
+                                    </p>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Intercooperation */}
-                        <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                            <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
-                                <LinkIcon className="text-warmGray" size={18} />
-                                <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Perfil de intercooperación</h4>
+                    {/* Intercooperation */}
+                    <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 bg-sand/30 border-b border-border flex items-center gap-2">
+                            <LinkIcon className="text-warmGray" size={18} />
+                            <h4 className="text-sm font-bold text-textLight uppercase tracking-wider">Perfil de intercooperación</h4>
+                        </div>
+                        <div className="p-6 space-y-8">
+                            <div>
+                                <h4 className="text-sm font-bold text-text mb-3">Capacidad para compartir experiencia en:</h4>
+                                {cad.intercoop_compartir?.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {cad.intercoop_compartir.map((item, i) => (
+                                            <span key={i} className="px-3 py-1.5 bg-forest text-white text-xs font-medium rounded-full shadow-sm">{item}</span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-textLight italic">Información pendiente de completar</p>
+                                )}
                             </div>
-                            <div className="p-6 space-y-8">
-                                <div>
-                                    <h4 className="text-sm font-bold text-text mb-3">Capacidad para compartir experiencia en:</h4>
-                                    {cad.intercoop_compartir?.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2">
-                                            {cad.intercoop_compartir.map((item, i) => (
-                                                <span key={i} className="px-3 py-1.5 bg-forest text-white text-xs font-medium rounded-full shadow-sm">{item}</span>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-textLight italic">Información pendiente de completar</p>
-                                    )}
-                                </div>
 
-                                <div>
-                                    <h4 className="text-sm font-bold text-text mb-3">Buscando apoyo o sinergias en:</h4>
-                                    {cad.intercoop_apoyo_necesario?.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2">
-                                            {cad.intercoop_apoyo_necesario.map((item, i) => (
-                                                <span key={i} className="px-3 py-1.5 bg-accent/20 text-accent border border-accent/20 text-xs font-medium rounded-full shadow-sm">{item}</span>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-textLight italic">Información pendiente de completar</p>
-                                    )}
-                                </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-text mb-3">Buscando apoyo o sinergias en:</h4>
+                                {cad.intercoop_apoyo_necesario?.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {cad.intercoop_apoyo_necesario.map((item, i) => (
+                                            <span key={i} className="px-3 py-1.5 bg-accent/20 text-accent border border-accent/20 text-xs font-medium rounded-full shadow-sm">{item}</span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-textLight italic">Información pendiente de completar</p>
+                                )}
+                            </div>
 
-                                <div className="bg-sage/10 p-4 rounded-lg border border-forest/20">
-                                    <p className="text-sm text-forest mb-2"><span className="font-bold">Disposición a red:</span> {cad.intercoop_disposicion || <span className="italic font-normal">Pendiente</span>}</p>
-                                    <p className="text-sm text-forest"><span className="font-bold">Contactos técnicos:</span> {cad.intercoop_referentes || <span className="italic font-normal">Pendiente</span>}</p>
-                                </div>
+                            <div className="bg-sage/10 p-4 rounded-lg border border-forest/20">
+                                <p className="text-sm text-forest mb-2"><span className="font-bold">Disposición a red:</span> {cad.intercoop_disposicion || <span className="italic font-normal">Pendiente</span>}</p>
+                                <p className="text-sm text-forest"><span className="font-bold">Contactos técnicos:</span> {cad.intercoop_referentes || <span className="italic font-normal">Pendiente</span>}</p>
                             </div>
                         </div>
                     </div>
