@@ -76,7 +76,7 @@ export default function CadPublicProfile({ params }) {
                         )}
                         {cad.forma_juridica && (
                             <span className="flex items-center gap-1.5 px-3 py-1 bg-sand border border-border rounded-full">
-                                <Building size={16} /> {cad.forma_juridica}
+                                <Building size={16} /> {Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica}
                             </span>
                         )}
                         {cad.num_socios_productoras && (
@@ -122,11 +122,11 @@ export default function CadPublicProfile({ params }) {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {[
                             { label: "Territorio", value: cad.territorio },
-                            { label: "Forma Jurídica", value: cad.forma_juridica },
+                            { label: "Forma Jurídica", value: Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica },
                             { label: "Socias Productoras", value: cad.num_socios_productoras },
                             { label: "Año de Constitución", value: cad.ano_constitucion },
                             { label: "Personas Trabajadoras", value: cad.num_personas_trabajadoras },
-                            { label: "Gobernanza", value: cad.tipo_gobernanza },
+                            { label: "Gobernanza", value: Array.isArray(cad.tipo_gobernanza) ? cad.tipo_gobernanza.join(', ') : cad.tipo_gobernanza },
                             { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
                             { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
                             { label: "Superficie", value: cad.datos_adicionales?.superficie_instalaciones },
@@ -178,7 +178,7 @@ export default function CadPublicProfile({ params }) {
                                 {[
                                     { label: "Email Público", value: cad.email_contacto },
                                     { label: "Teléfono Público", value: cad.telefono },
-                                    { label: "Forma Jurídica", value: cad.forma_juridica },
+                                    { label: "Forma Jurídica", value: Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica },
                                     { label: "Año Constitución", value: cad.ano_constitucion },
                                     { label: "Municipio Sede", value: cad.datos_adicionales?.municipio_sede },
                                 ].map((field, i) => (
@@ -202,7 +202,7 @@ export default function CadPublicProfile({ params }) {
                                     { label: "Socias Productoras", value: cad.num_socios_productoras },
                                     { label: "Socias Activas", value: cad.datos_adicionales?.num_socias_activas },
                                     { label: "Personas en Plantilla", value: cad.num_personas_trabajadoras },
-                                    { label: "Modelo de Gobernanza", value: cad.tipo_gobernanza },
+                                    { label: "Modelo de Gobernanza", value: Array.isArray(cad.tipo_gobernanza) ? cad.tipo_gobernanza.join(', ') : cad.tipo_gobernanza },
                                 ].map((field, i) => (
                                     <div key={i}>
                                         <span className="text-textLight block text-xs uppercase mb-1">{field.label}</span>

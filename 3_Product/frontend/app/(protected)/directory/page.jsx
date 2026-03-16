@@ -137,7 +137,7 @@ export default function DirectoryPage() {
                                         )}
                                         {cad.forma_juridica && (
                                             <span className="flex items-center gap-1.5 px-3 py-1 bg-sand border border-border rounded-full">
-                                                <Building size={14} /> {cad.forma_juridica}
+                                                <Building size={14} /> {Array.isArray(cad.forma_juridica) ? cad.forma_juridica.join(', ') : cad.forma_juridica}
                                             </span>
                                         )}
                                         {cad.num_socios_productoras && (
