@@ -7,10 +7,10 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const ROL_RED_OPTIONS = [
     "",
-    "Contacto intercoop. técnica",
-    "Contacto intercoop. económica",
-    "Contacto grupo motor",
-    "Contacto grupo gobernanza",
+    "Contacto Intercooperación Técnica",
+    "Contacto Intercooperación Económica",
+    "Contacto para la gobernanza de la red",
+    "Contacto para el grupo motor de la red",
 ];
 
 /**
