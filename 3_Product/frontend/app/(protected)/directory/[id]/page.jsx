@@ -18,11 +18,11 @@ function displayList(val) {
         }
     }
     if (!Array.isArray(arr)) return String(val);
-    // Detect corrupted arrays (mostly single-character entries from spread bug)
-    const singleChars = arr.filter(item => typeof item === 'string' && item.length <= 1);
-    if (arr.length > 3 && singleChars.length > arr.length * 0.5) {
-        // Reconstruct: join all into one string, split by known full items
-        const fullItems = arr.filter(item => typeof item === 'string' && item.length > 1);
+    // Detect corrupted arrays (mostly single/short entries from spread bug)
+    const shortItems = arr.filter(item => typeof item === 'string' && item.length <= 3);
+    if (arr.length > 3 && shortItems.length > arr.length * 0.5) {
+        // Only keep entries that look like real values (4+ chars)
+        const fullItems = arr.filter(item => typeof item === 'string' && item.length > 3);
         if (fullItems.length > 0) return fullItems.join(', ');
         return arr.join('');
     }
