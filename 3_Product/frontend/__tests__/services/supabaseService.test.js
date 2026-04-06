@@ -20,6 +20,7 @@ const mockStorage = {
 const mockAuth = {
     getSession: vi.fn(),
     signInWithPassword: vi.fn(),
+    updateUser: vi.fn(),
 };
 
 vi.mock('@/utils/supabase', () => ({
@@ -449,6 +450,22 @@ describe('authService', () => {
 
             const token = await authService.getAccessToken();
             expect(token).toBeNull();
+        });
+    });
+    describe('updatePassword()', () => {
+        it('calls updateUser with the new password', async () => {
+            mockAuth.updateUser.mockResolvedValue({ data: {}, error: null });
+
+            await authService.updatePassword('newSecurePass123');
+
+            expect(mockAuth.updateUser).toHaveBeenCalledWith({ password: 'newSecurePass123' });
+        });
+
+        it('throws on Supabase error', async () => {
+            mockAuth.updateUser.mockResolvedValue({ data: null, error: { message: 'Password too short' } });
+
+            await expect(authService.updatePassword('abc'))
+                .rejects.toThrow('Password too short');
         });
     });
 });

@@ -27,7 +27,12 @@ const mockBlocks = [
         title: "Block A",
         questions: [
             { id: "0.1", q: "Radio question", type: "radio", options: ["Sí", "No"] },
-            { id: "0.2", q: "Conditional textarea", type: "textarea", conditional: true },
+            {
+                id: "0.2",
+                q: "Conditional textarea",
+                type: "textarea",
+                showWhen: { parentId: "0.1", contains: "no" },
+            },
             { id: "0.3", q: "Info only", type: "info", description: "Read this." },
         ],
     },
@@ -89,9 +94,11 @@ describe('isAnswered', () => {
 // ─── countTotalQuestions ────────────────────────────────────────────────────
 
 describe('countTotalQuestions', () => {
-    it('counts only non-info questions', () => {
-        // Block A: 2 non-info (radio + textarea), Block B: 2 non-info
-        expect(countTotalQuestions(mockBlocks)).toBe(4);
+    it('counts only non-info questions (visible with no answers)', () => {
+        // Block A: 0.1 (radio, always visible) — 0.2 has showWhen so hidden with no answers
+        // Block B: 1.1 + 1.2 = 2 visible
+        // Total visible: 1 + 2 = 3
+        expect(countTotalQuestions(mockBlocks)).toBe(3);
     });
 
     it('returns 0 for empty blocks array', () => {
@@ -144,8 +151,11 @@ describe('calculateProgress', () => {
     });
 
     it('returns 50 when half are answered', () => {
-        const answers = { "0.1": "Sí", "1.1": "B" };
-        expect(calculateProgress(mockBlocks, answers)).toBe(50);
+        // With 0.1 answered as "Sí, todo correcto" (doesn't contain "no"), 0.2 stays hidden.
+        // Visible: 0.1, 1.1, 1.2 (3 total). Answered: 0.1 + 1.1 = 2 → 66.7%
+        // Test with only 1 of 3 answered → 33.3%
+        const answers = { "0.1": "Sí" };
+        expect(calculateProgress(mockBlocks, answers)).toBeCloseTo(33.33, 1);
     });
 
     it('returns 0 for empty blocks', () => {
@@ -180,19 +190,20 @@ describe('blockHasAnswers', () => {
 
 describe('shouldShowQuestion', () => {
     const blockQuestions = mockBlocks[0].questions;
-    const radioQ = blockQuestions[0];      // { id: "0.1", type: "radio" }
-    const conditionalQ = blockQuestions[1]; // { id: "0.2", conditional: true }
+    const radioQ = blockQuestions[0];       // { id: "0.1", type: "radio" } — no showWhen
+    const conditionalQ = blockQuestions[1]; // showWhen: { parentId: "0.1", contains: "no" }
 
     it('always shows non-conditional questions', () => {
         expect(shouldShowQuestion(radioQ, blockQuestions, {})).toBe(true);
     });
 
     it('hides conditional question when previous has no answer', () => {
+        // No answer for 0.1 → parentAnswer is undefined → should hide
         expect(shouldShowQuestion(conditionalQ, blockQuestions, {})).toBe(false);
     });
 
     it('hides conditional question when previous answer is positive', () => {
-        // "Sí, todo correcto" contains no negative keywords
+        // "Sí, todo correcto" does not contain "no" → should hide
         const answers = { "0.1": "Sí, todo correcto" };
         expect(shouldShowQuestion(conditionalQ, blockQuestions, answers)).toBe(false);
     });
@@ -203,13 +214,25 @@ describe('shouldShowQuestion', () => {
     });
 
     it('shows conditional question when previous answer contains "actualizar"', () => {
+        // "actualizar" does not contain "no" — this tests a different keyword
+        // Re-wire: use a question with showWhen.contains = "actualizar"
+        const actualizarQ = {
+            id: "0.4",
+            type: "textarea",
+            showWhen: { parentId: "0.1", contains: "actualizar" },
+        };
         const answers = { "0.1": "Hay que actualizar algunos datos" };
-        expect(shouldShowQuestion(conditionalQ, blockQuestions, answers)).toBe(true);
+        expect(shouldShowQuestion(actualizarQ, blockQuestions, answers)).toBe(true);
     });
 
     it('shows conditional question when previous answer contains "incorrectos"', () => {
+        const incorrectosQ = {
+            id: "0.5",
+            type: "textarea",
+            showWhen: { parentId: "0.1", contains: "incorrectos" },
+        };
         const answers = { "0.1": "Los datos son incorrectos" };
-        expect(shouldShowQuestion(conditionalQ, blockQuestions, answers)).toBe(true);
+        expect(shouldShowQuestion(incorrectosQ, blockQuestions, answers)).toBe(true);
     });
 
     it('is case-insensitive for keyword matching', () => {

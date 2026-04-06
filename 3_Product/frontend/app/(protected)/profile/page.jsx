@@ -4,8 +4,7 @@ import { Save, UserCircle, Building, Link as LinkIcon, AlertCircle, Microscope, 
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { profileService, teamService, storageService } from "@/lib/supabaseService";
-import { supabase } from "@/utils/supabase";
+import { profileService, teamService, storageService, authService } from "@/lib/supabaseService";
 import TeamMemberList from "@/components/TeamMemberList";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { 
@@ -598,10 +597,9 @@ function ProfileForm() {
                                             type="button"
                                             disabled={changingPassword || !newPassword || newPassword.length < 6 || newPassword !== confirmPassword}
                                             onClick={async () => {
-                                                setChangingPassword(true);
+                                                    setChangingPassword(true);
                                                 try {
-                                                    const { error } = await supabase.auth.updateUser({ password: newPassword });
-                                                    if (error) throw error;
+                                                    await authService.updatePassword(newPassword);
                                                     toast.success("Contraseña actualizada correctamente");
                                                     setShowPasswordForm(false);
                                                     setNewPassword("");
