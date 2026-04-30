@@ -157,12 +157,11 @@ export function calculateCadProgress(answers) {
     };
 }
 
-// ─── Report Builder ──────────────────────────────────────────────────────────
-
 /**
  * Build a full progress report for all CADs.
+ * Checks ALL mapped emails per CAD to find the best form match.
  *
- * @param {Array<{id, nombre_comercial, territorio, estado, user_email}>} cadsWithEmails
+ * @param {Array<{id, nombre_comercial, territorio, estado, user_email, all_emails}>} cadsWithEmails
  * @param {Array<{user_email, answers}>} allForms
  * @returns {Array<{cadId, cadName, territorio, estado, userEmail, totalQuestions, answeredQuestions, progressPercent, submittedAt, blockProgress}>}
  */
@@ -173,18 +172,69 @@ export function buildProgressReport(cadsWithEmails, allForms) {
     });
 
     return cadsWithEmails.map(cad => {
-        const answers = cad.user_email ? formsByEmail[cad.user_email] || null : null;
-        const progress = calculateCadProgress(answers);
+        // Check all mapped emails for this CAD and pick the best form
+        const emails = cad.all_emails || (cad.user_email ? [cad.user_email] : []);
+        let bestAnswers = null;
+        let matchedEmail = cad.user_email || '';
+
+        for (const email of emails) {
+            const formAnswers = formsByEmail[email];
+            if (!formAnswers) continue;
+
+            // Prefer submitted form, then the one with most answers
+            if (!bestAnswers) {
+                bestAnswers = formAnswers;
+                matchedEmail = email;
+            } else if (formAnswers.submitted_at && !bestAnswers.submitted_at) {
+                bestAnswers = formAnswers;
+                matchedEmail = email;
+            } else if (Object.keys(formAnswers).length > Object.keys(bestAnswers).length) {
+                bestAnswers = formAnswers;
+                matchedEmail = email;
+            }
+        }
+
+        const progress = calculateCadProgress(bestAnswers);
 
         return {
             cadId: cad.id,
             cadName: cad.nombre_comercial || '(sin nombre)',
             territorio: cad.territorio || '',
             estado: cad.estado || 'Activo',
-            userEmail: cad.user_email || '',
+            userEmail: matchedEmail,
             ...progress,
         };
     });
+}
+
+/**
+ * Resolve the best form answers for a CAD across all its mapped emails.
+ * @param {Object} cad - CAD with all_emails and user_email
+ * @param {Object} formsByEmail - Map of email -> answers
+ * @returns {{ answers: Object, email: string }}
+ */
+function resolveFormForCad(cad, formsByEmail) {
+    const emails = cad.all_emails || (cad.user_email ? [cad.user_email] : []);
+    let bestAnswers = {};
+    let matchedEmail = cad.user_email || '';
+
+    for (const email of emails) {
+        const formAnswers = formsByEmail[email];
+        if (!formAnswers) continue;
+
+        if (Object.keys(bestAnswers).length === 0) {
+            bestAnswers = formAnswers;
+            matchedEmail = email;
+        } else if (formAnswers.submitted_at && !bestAnswers.submitted_at) {
+            bestAnswers = formAnswers;
+            matchedEmail = email;
+        } else if (Object.keys(formAnswers).length > Object.keys(bestAnswers).length) {
+            bestAnswers = formAnswers;
+            matchedEmail = email;
+        }
+    }
+
+    return { answers: bestAnswers, email: matchedEmail };
 }
 
 // ─── CSV Export (lightweight fallback) ───────────────────────────────────────
@@ -338,13 +388,13 @@ export function answersToAggregatedXlsx(cadsWithEmails, allForms) {
     const overviewData = [overviewHeaders];
 
     cadsWithEmails.forEach(cad => {
-        const rawAnswers = cad.user_email ? formsByEmail[cad.user_email] || {} : {};
+        const { answers: rawAnswers, email } = resolveFormForCad(cad, formsByEmail);
         const progress = calculateCadProgress(Object.keys(rawAnswers).length > 0 ? rawAnswers : null);
         overviewData.push([
             cad.nombre_comercial || '(sin nombre)',
             cad.territorio || '',
             cad.estado || 'Activo',
-            cad.user_email || '',
+            email,
             progress.progressPercent,
             progress.submittedAt ? 'Sí' : 'No',
         ]);
@@ -374,7 +424,7 @@ export function answersToAggregatedXlsx(cadsWithEmails, allForms) {
         const sheetData = [headers];
 
         cadsWithEmails.forEach(cad => {
-            const rawAnswers = cad.user_email ? formsByEmail[cad.user_email] || {} : {};
+            const { answers: rawAnswers } = resolveFormForCad(cad, formsByEmail);
             const { submitted_at, ...formAnswers } = rawAnswers;
 
             const row = [cad.nombre_comercial || '(sin nombre)'];
@@ -422,7 +472,7 @@ export function answersToAggregatedCsv(cadsWithEmails, allForms) {
     ];
 
     const rows = cadsWithEmails.map(cad => {
-        const rawAnswers = cad.user_email ? formsByEmail[cad.user_email] || {} : {};
+        const { answers: rawAnswers, email } = resolveFormForCad(cad, formsByEmail);
         const { submitted_at, ...formAnswers } = rawAnswers;
         const progress = calculateCadProgress(Object.keys(rawAnswers).length > 0 ? rawAnswers : null);
 
@@ -430,7 +480,7 @@ export function answersToAggregatedCsv(cadsWithEmails, allForms) {
             escapeCsvField(cad.nombre_comercial || '(sin nombre)'),
             escapeCsvField(cad.territorio || ''),
             escapeCsvField(cad.estado || 'Activo'),
-            escapeCsvField(cad.user_email || ''),
+            escapeCsvField(email),
             progress.progressPercent,
             submitted_at ? 'Sí' : 'No',
         ];

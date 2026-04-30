@@ -524,7 +524,9 @@ describe('profileService (admin reporting)', () => {
 
             expect(result).toHaveLength(2);
             expect(result[0].user_email).toBe('ekoalde@test.com');
+            expect(result[0].all_emails).toEqual(['ekoalde@test.com']);
             expect(result[1].user_email).toBeNull(); // No mapping for cad-2
+            expect(result[1].all_emails).toEqual([]);
         });
 
         it('throws when profiles query fails', async () => {

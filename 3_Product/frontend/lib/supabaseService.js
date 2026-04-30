@@ -95,12 +95,17 @@ export const profileService = {
         if (profiles.error) throw new Error(`Error cargando CADs: ${profiles.error.message}`);
         if (mappings.error) throw new Error(`Error cargando mappings: ${mappings.error.message}`);
 
-        const emailMap = {};
-        (mappings.data || []).forEach(m => { emailMap[m.cad_id] = m.user_email; });
+        // Collect ALL emails per CAD (a CAD may have multiple users)
+        const emailsMap = {};
+        (mappings.data || []).forEach(m => {
+            if (!emailsMap[m.cad_id]) emailsMap[m.cad_id] = [];
+            emailsMap[m.cad_id].push(m.user_email);
+        });
 
         return (profiles.data || []).map(p => ({
             ...p,
-            user_email: emailMap[p.id] || null
+            user_email: emailsMap[p.id]?.[0] || null,
+            all_emails: emailsMap[p.id] || [],
         }));
     },
 
