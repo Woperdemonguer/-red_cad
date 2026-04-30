@@ -82,6 +82,29 @@ export const profileService = {
     },
 
     /**
+     * Fetch all CAD profiles enriched with their mapped user emails.
+     * Used for admin reporting to link profiles to their diagnostic forms.
+     * @returns {Promise<Array<{id, nombre_comercial, territorio, estado, user_email}>>}
+     */
+    async listForAdminWithEmails() {
+        const [profiles, mappings] = await Promise.all([
+            supabase.from("cad_profiles").select("id, nombre_comercial, territorio, estado").order("nombre_comercial"),
+            supabase.from("cad_users_mapping").select("cad_id, user_email")
+        ]);
+
+        if (profiles.error) throw new Error(`Error cargando CADs: ${profiles.error.message}`);
+        if (mappings.error) throw new Error(`Error cargando mappings: ${mappings.error.message}`);
+
+        const emailMap = {};
+        (mappings.data || []).forEach(m => { emailMap[m.cad_id] = m.user_email; });
+
+        return (profiles.data || []).map(p => ({
+            ...p,
+            user_email: emailMap[p.id] || null
+        }));
+    },
+
+    /**
      * Update a CAD profile's public data.
      * Only updates the fields that are part of the profile schema.
      */
@@ -297,6 +320,20 @@ export const formService = {
             .limit(1);
 
         return profile && profile.length > 0 ? profile[0].email_contacto : null;
+    },
+
+    /**
+     * Load ALL form submissions (admin only).
+     * Returns array of { user_email, answers } for every diagnostic form row.
+     * @returns {Promise<Array<{user_email: string, answers: object}>>}
+     */
+    async listAll() {
+        const { data, error } = await supabase
+            .from("diagnostic_forms")
+            .select("user_email, answers");
+
+        if (error) throw new Error(`Error cargando formularios: ${error.message}`);
+        return data || [];
     },
 };
 

@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, KeyRound, X } from "lucide-react";
+import { ShieldAlert, Users, LayoutDashboard, Settings, Trash2, PlusCircle, KeyRound, X, BarChart3, CheckCircle2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,12 +9,15 @@ import { profileService, formService, authService } from "@/lib/supabaseService"
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminResetUserPassword } from "@/app/actions/adminAuth";
+import { buildProgressReport } from "@/lib/reportUtils";
 
 export default function AdminDashboard() {
     const router = useRouter();
     const { isAdmin, loading: authLoading } = useAuth();
     const [cads, setCads] = useState([]);
+    const [allForms, setAllForms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     // Password Reset Modal State
     const [resetModalOpen, setResetModalOpen] = useState(false);
@@ -28,7 +31,21 @@ export default function AdminDashboard() {
     const [deleteTarget, setDeleteTarget] = useState({ id: null, nombre: "" });
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // Fetch CAD list once auth resolves and user is admin
+    // Fetch CAD list + form data
+    const fetchData = async () => {
+        try {
+            const [profiles, forms] = await Promise.all([
+                profileService.listForAdminWithEmails(),
+                formService.listAll(),
+            ]);
+            setCads(profiles);
+            setAllForms(forms);
+        } catch (err) {
+            console.error('Admin fetchData failed:', err.message);
+            toast.error(err.message);
+        }
+    };
+
     useEffect(() => {
         if (authLoading) return;
         if (!isAdmin) {
@@ -36,18 +53,43 @@ export default function AdminDashboard() {
             return;
         }
 
-        async function fetchCads() {
-            try {
-                const profiles = await profileService.listForAdmin();
-                setCads(profiles);
-            } catch (err) {
-                toast.error(err.message);
-            }
+        (async () => {
+            await fetchData();
             setLoading(false);
-        }
-
-        fetchCads();
+        })();
     }, [authLoading, isAdmin]);
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
+        toast.success("Datos actualizados");
+    };
+
+    // Build progress report from loaded data
+    const progressReport = useMemo(() => {
+        if (cads.length === 0) return [];
+        return buildProgressReport(cads, allForms);
+    }, [cads, allForms]);
+
+    // Derived summary stats
+    const submittedCount = useMemo(() =>
+        progressReport.filter(r => r.submittedAt).length
+    , [progressReport]);
+
+    const averageProgress = useMemo(() => {
+        const withEmail = progressReport.filter(r => r.userEmail);
+        if (withEmail.length === 0) return 0;
+        const sum = withEmail.reduce((acc, r) => acc + r.progressPercent, 0);
+        return Math.round(sum / withEmail.length);
+    }, [progressReport]);
+
+    // Progress lookup by cadId for the table
+    const progressByCadId = useMemo(() => {
+        const map = {};
+        progressReport.forEach(r => { map[r.cadId] = r; });
+        return map;
+    }, [progressReport]);
 
     const handleOpenResetModal = async (cadId) => {
         const toastId = toast.loading("Buscando usuario vinculado...");
@@ -61,7 +103,6 @@ export default function AdminDashboard() {
             }
 
             setResetTargetEmail(resolvedEmail);
-            // Auto-generate a random secure-ish password pattern
             const shortName = resolvedEmail.split('@')[0].replace(/[^a-zA-Z]/g, '');
             setResetPasswordValue(shortName.charAt(0).toUpperCase() + shortName.slice(1) + new Date().getFullYear() + "!");
             setResetModalOpen(true);
@@ -162,8 +203,18 @@ export default function AdminDashboard() {
                         Visión global de las agrupaciones y control de la plataforma.
                     </p>
                 </div>
+                <button
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="text-sm bg-white text-text px-4 py-2 rounded-lg hover:bg-sand transition-colors flex items-center gap-2 font-medium border border-border shadow-sm disabled:opacity-50"
+                    title="Actualizar datos"
+                >
+                    <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+                    Actualizar
+                </button>
             </div>
 
+            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl border border-border shadow-sm">
                     <div className="flex justify-between items-start">
@@ -180,19 +231,48 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-textLight text-sm font-medium">Diagnósticos Completados</p>
-                            <h3 className="text-3xl font-bold font-serif text-text mt-2">—</h3>
+                            <h3 className="text-3xl font-bold font-serif text-text mt-2">
+                                {submittedCount}
+                                <span className="text-base font-normal text-textLight ml-1">/ {cads.length}</span>
+                            </h3>
                         </div>
                         <div className="p-3 bg-accent/10 rounded-lg text-accent">
-                            <Settings size={24} />
+                            <CheckCircle2 size={24} />
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl border border-border shadow-sm">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-textLight text-sm font-medium">Progreso Medio</p>
+                            <h3 className="text-3xl font-bold font-serif text-text mt-2">
+                                {averageProgress}%
+                            </h3>
+                            <div className="mt-2 h-2 w-full bg-sand rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-accent rounded-full transition-all duration-700"
+                                    style={{ width: `${averageProgress}%` }}
+                                />
+                            </div>
+                        </div>
+                        <div className="p-3 bg-sage/20 rounded-lg text-forest">
+                            <BarChart3 size={24} />
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* CAD Directory Table */}
             <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
                 <div className="px-6 py-5 border-b border-border bg-blueBgLight/50 flex justify-between items-center flex-wrap gap-4">
                     <h2 className="text-xl font-bold font-serif text-text">Directorio de Entidades</h2>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap">
+                        <Link
+                            href="/admin/reports"
+                            className="text-sm bg-white text-text px-4 py-2 rounded-lg hover:bg-sand transition-colors flex items-center gap-2 font-medium border border-border shadow-sm"
+                        >
+                            <BarChart3 size={16} className="text-forest" /> Informes
+                        </Link>
                         <button
                             onClick={handleCreateCad}
                             className="text-sm bg-accent text-text px-4 py-2 rounded-lg hover:bg-accentHover transition-colors flex items-center gap-2 font-bold"
@@ -209,73 +289,80 @@ export default function AdminDashboard() {
                                 <th className="px-6 py-4 font-medium">ENTIDAD</th>
                                 <th className="px-6 py-4 font-medium">TERRITORIO</th>
                                 <th className="px-6 py-4 font-medium">ESTADO</th>
+                                <th className="px-6 py-4 font-medium">PROGRESO</th>
                                 <th className="px-6 py-4 font-medium">DIAGNÓSTICO</th>
                                 <th className="px-6 py-4 font-medium text-right">ACCIONES</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {cads.map((cad) => (
-                                <tr key={cad.id} className="hover:bg-sand/10 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="font-semibold text-text">{cad.nombre_comercial}</div>
-                                        <div className="text-xs text-textLight mt-1">{cad.id.substring(0, 8)}...</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-text">{cad.territorio || "-"}</td>
-                                    <td className="px-6 py-4">
-                                        {cad.estado === "Inactivo" ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red/10 text-red">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-red"></span>
-                                                Inactivo
-                                            </span>
-                                        ) : cad.estado === "Satélite" ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
-                                                Satélite
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sage/20 text-forest">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-forest"></span>
-                                                {cad.estado || "Activo"}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <Link
-                                            href={`/form?cad_id=${cad.id}`}
-                                            className="text-textLight hover:text-accent text-sm font-medium transition-colors inline-flex items-center gap-1"
-                                        >
-                                            Rellenar Formulario <span>→</span>
-                                        </Link>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => handleOpenResetModal(cad.id)}
-                                                className="text-warmGray hover:text-accent text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
-                                                title="Gestionar Acceso"
-                                            >
-                                                <KeyRound size={16} /> Contraseña
-                                            </button>
+                            {cads.map((cad) => {
+                                const prog = progressByCadId[cad.id];
+                                return (
+                                    <tr key={cad.id} className="hover:bg-sand/10 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="font-semibold text-text">{cad.nombre_comercial}</div>
+                                            <div className="text-xs text-textLight mt-1">{cad.id.substring(0, 8)}...</div>
+                                        </td>
+                                        <td className="px-6 py-4 text-text">{cad.territorio || "-"}</td>
+                                        <td className="px-6 py-4">
+                                            {cad.estado === "Inactivo" ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red/10 text-red">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-red"></span>
+                                                    Inactivo
+                                                </span>
+                                            ) : cad.estado === "Satélite" ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                                                    Satélite
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sage/20 text-forest">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-forest"></span>
+                                                    {cad.estado || "Activo"}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <ProgressCell progress={prog} />
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <Link
-                                                href={`/profile?cad_id=${cad.id}`}
-                                                className="text-accent hover:text-accentHover text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
+                                                href={`/form?cad_id=${cad.id}`}
+                                                className="text-textLight hover:text-accent text-sm font-medium transition-colors inline-flex items-center gap-1"
                                             >
-                                                Editar Perfil
+                                                Rellenar Formulario <span>→</span>
                                             </Link>
-                                            <button
-                                                onClick={() => handleDeleteCad(cad.id, cad.nombre_comercial)}
-                                                className="text-red hover:text-white hover:bg-red p-1.5 rounded-lg transition-colors border border-transparent hover:border-red"
-                                                title="Eliminar Perfil"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleOpenResetModal(cad.id)}
+                                                    className="text-warmGray hover:text-accent text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5"
+                                                    title="Gestionar Acceso"
+                                                >
+                                                    <KeyRound size={16} /> Contraseña
+                                                </button>
+                                                <Link
+                                                    href={`/profile?cad_id=${cad.id}`}
+                                                    className="text-accent hover:text-accentHover text-sm font-medium transition-colors border border-border bg-white shadow-sm px-3 py-1.5 rounded-lg inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+                                                >
+                                                    Editar Perfil
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDeleteCad(cad.id, cad.nombre_comercial)}
+                                                    className="text-red hover:text-white hover:bg-red p-1.5 rounded-lg transition-colors border border-transparent hover:border-red"
+                                                    title="Eliminar Perfil"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                             {cads.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-textLight">
+                                    <td colSpan="6" className="px-6 py-8 text-center text-textLight">
                                         No se encontraron perfiles de CAD.
                                     </td>
                                 </tr>
@@ -284,7 +371,7 @@ export default function AdminDashboard() {
                     </table>
                 </div>
             </div>
-            {/* Password Reset Modal - Moved to root for z-index and event capture */}
+            {/* Password Reset Modal */}
             {resetModalOpen && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-fade-in relative" onClick={(e) => e.stopPropagation()}>
@@ -372,6 +459,46 @@ export default function AdminDashboard() {
                 variant="danger"
                 loading={isDeleting}
             />
+        </div>
+    );
+}
+
+/**
+ * ProgressCell — Inline mini progress bar + percentage for the admin table.
+ */
+function ProgressCell({ progress }) {
+    if (!progress || !progress.userEmail) {
+        return <span className="text-textLight text-sm">—</span>;
+    }
+
+    if (progress.submittedAt) {
+        return (
+            <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-sand rounded-full overflow-hidden max-w-[100px]">
+                        <div className="h-full bg-forest rounded-full" style={{ width: '100%' }} />
+                    </div>
+                    <span className="text-xs font-bold text-forest whitespace-nowrap">100%</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-forest">
+                    <CheckCircle2 size={12} /> Enviado
+                </span>
+            </div>
+        );
+    }
+
+    const pct = progress.progressPercent || 0;
+    const barColor = pct === 0 ? 'bg-warmGray/30' : pct < 50 ? 'bg-accent' : 'bg-sage';
+
+    return (
+        <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 bg-sand rounded-full overflow-hidden max-w-[100px]">
+                <div
+                    className={`h-full ${barColor} rounded-full transition-all duration-500`}
+                    style={{ width: `${Math.max(pct, 2)}%` }}
+                />
+            </div>
+            <span className="text-xs font-medium text-textLight whitespace-nowrap">{pct}%</span>
         </div>
     );
 }

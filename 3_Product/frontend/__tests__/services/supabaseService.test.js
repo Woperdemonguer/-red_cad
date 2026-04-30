@@ -491,3 +491,87 @@ describe('formService (edge cases)', () => {
         });
     });
 });
+
+// ─── New admin reporting functions (Progress Report feature) ─────────────────
+
+describe('profileService (admin reporting)', () => {
+    describe('listForAdminWithEmails()', () => {
+        it('merges profiles with email mappings', async () => {
+            // This function uses Promise.all with two separate .from() calls
+            // First call returns profiles, second returns mappings
+            let callCount = 0;
+            mockFrom.mockImplementation((table) => {
+                callCount++;
+                if (table === 'cad_profiles') {
+                    return mockChain({
+                        data: [
+                            { id: 'cad-1', nombre_comercial: 'Ekoalde', territorio: 'Navarra', estado: 'Activo' },
+                            { id: 'cad-2', nombre_comercial: 'La Troca', territorio: 'BCN', estado: 'Activo' },
+                        ],
+                        error: null,
+                    });
+                }
+                if (table === 'cad_users_mapping') {
+                    return mockChain({
+                        data: [{ cad_id: 'cad-1', user_email: 'ekoalde@test.com' }],
+                        error: null,
+                    });
+                }
+                return mockChain({ data: null, error: null });
+            });
+
+            const result = await profileService.listForAdminWithEmails();
+
+            expect(result).toHaveLength(2);
+            expect(result[0].user_email).toBe('ekoalde@test.com');
+            expect(result[1].user_email).toBeNull(); // No mapping for cad-2
+        });
+
+        it('throws when profiles query fails', async () => {
+            mockFrom.mockImplementation((table) => {
+                if (table === 'cad_profiles') {
+                    return mockChain({ data: null, error: { message: 'DB down' } });
+                }
+                return mockChain({ data: [], error: null });
+            });
+
+            await expect(profileService.listForAdminWithEmails())
+                .rejects.toThrow('Error cargando CADs');
+        });
+    });
+});
+
+describe('formService (admin reporting)', () => {
+    describe('listAll()', () => {
+        it('returns all form submissions', async () => {
+            const fakeForms = [
+                { user_email: 'a@test.com', answers: { '1.1': 'Yes' } },
+                { user_email: 'b@test.com', answers: { '1.1': 'No' } },
+            ];
+            mockFrom.mockReturnValue(mockChain({ data: fakeForms, error: null }));
+
+            const result = await formService.listAll();
+
+            expect(mockFrom).toHaveBeenCalledWith('diagnostic_forms');
+            expect(result).toHaveLength(2);
+            expect(result[0].user_email).toBe('a@test.com');
+        });
+
+        it('returns empty array when no forms exist', async () => {
+            mockFrom.mockReturnValue(mockChain({ data: [], error: null }));
+
+            const result = await formService.listAll();
+            expect(result).toEqual([]);
+        });
+
+        it('throws on Supabase error', async () => {
+            mockFrom.mockReturnValue(mockChain({
+                data: null,
+                error: { message: 'Permission denied' },
+            }));
+
+            await expect(formService.listAll())
+                .rejects.toThrow('Error cargando formularios');
+        });
+    });
+});
