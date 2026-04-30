@@ -292,8 +292,8 @@ export default function AdminReportsPage() {
                         <tbody className="divide-y divide-border">
                             {progressReport.map((row) => (
                                 <tr key={row.cadId} className="hover:bg-sand/10 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="font-semibold text-text">{row.cadName}</div>
+                                    <td className="px-6 py-4 max-w-[180px]">
+                                        <div className="font-semibold text-text truncate" title={row.cadName}>{row.cadName}</div>
                                         <div className="text-xs text-textLight mt-0.5">{row.territorio || "—"}</div>
                                     </td>
                                     <td className="px-6 py-4">

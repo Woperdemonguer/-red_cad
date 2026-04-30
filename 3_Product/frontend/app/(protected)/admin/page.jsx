@@ -299,9 +299,8 @@ export default function AdminDashboard() {
                                 const prog = progressByCadId[cad.id];
                                 return (
                                     <tr key={cad.id} className="hover:bg-sand/10 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="font-semibold text-text">{cad.nombre_comercial}</div>
-                                            <div className="text-xs text-textLight mt-1">{cad.id.substring(0, 8)}...</div>
+                                        <td className="px-6 py-4 max-w-[180px]">
+                                            <div className="font-semibold text-text truncate" title={cad.nombre_comercial}>{cad.nombre_comercial}</div>
                                         </td>
                                         <td className="px-6 py-4 text-text">{cad.territorio || "-"}</td>
                                         <td className="px-6 py-4">
