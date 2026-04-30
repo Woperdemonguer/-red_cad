@@ -262,6 +262,30 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            {/* TEMPORARY DIAGNOSTIC — remove after debugging */}
+            {cads.length > 0 && allForms.length >= 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-xs font-mono space-y-1">
+                    <div className="font-bold text-sm mb-2">🔍 Diagnóstico: {allForms.length} formularios cargados de {cads.length} CADs</div>
+                    <div className="mb-2 text-textLight">
+                        Emails con formulario: <span className="text-text font-bold">{allForms.map(f => f.user_email).join(', ') || '(ninguno)'}</span>
+                    </div>
+                    {cads.map(cad => {
+                        const formEmails = allForms.map(f => f.user_email);
+                        const matchedEmail = (cad.all_emails || []).find(e => formEmails.includes(e));
+                        return (
+                            <div key={cad.id} className={matchedEmail ? 'text-forest' : 'text-red'}>
+                                {matchedEmail ? '✅' : '❌'} <span className="font-bold">{cad.nombre_comercial}</span>
+                                {' — '}
+                                {(cad.all_emails || []).length > 0
+                                    ? `mapped: [${(cad.all_emails || []).join(', ')}]`
+                                    : 'SIN EMAIL MAPEADO'}
+                                {matchedEmail && ` → form: ${matchedEmail}`}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
             {/* CAD Directory Table */}
             <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
                 <div className="px-6 py-5 border-b border-border bg-blueBgLight/50 flex justify-between items-center flex-wrap gap-4">

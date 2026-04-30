@@ -31,6 +31,8 @@ export default function AdminReportsPage() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [lastRefresh, setLastRefresh] = useState(null);
+    const [showDiagnostic, setShowDiagnostic] = useState(true);
+    const [diagnosticData, setDiagnosticData] = useState(null);
 
     // Fetch data
     const fetchData = async () => {
@@ -39,6 +41,41 @@ export default function AdminReportsPage() {
                 profileService.listForAdminWithEmails(),
                 formService.listAll(),
             ]);
+
+            // Debug: log data matching to browser console
+            console.group('📊 Admin Reports — Data Diagnostic');
+            console.log(`CADs loaded: ${profiles.length}`);
+            console.log(`Forms loaded: ${forms.length}`);
+            const formEmails = forms.map(f => f.user_email);
+            console.log('Form emails in DB:', formEmails);
+            profiles.forEach(p => {
+                const match = p.all_emails.some(e => formEmails.includes(e));
+                if (!match && p.all_emails.length > 0) {
+                    console.warn(`⚠️ ${p.nombre_comercial}: mapped emails ${JSON.stringify(p.all_emails)} — NO form match found`);
+                } else if (p.all_emails.length === 0) {
+                    console.warn(`⚠️ ${p.nombre_comercial}: NO mapped emails at all`);
+                } else {
+                    console.log(`✅ ${p.nombre_comercial}: matched via ${p.all_emails.find(e => formEmails.includes(e))}`);
+                }
+            });
+            console.groupEnd();
+
+            // Build diagnostic data for on-page display
+            setDiagnosticData({
+                cadCount: profiles.length,
+                formCount: forms.length,
+                formEmails,
+                cadDiag: profiles.map(p => {
+                    const matchedEmail = p.all_emails.find(e => formEmails.includes(e));
+                    return {
+                        name: p.nombre_comercial,
+                        allEmails: p.all_emails,
+                        matchedEmail: matchedEmail || null,
+                        hasForm: !!matchedEmail,
+                    };
+                }),
+            });
+
             setCads(profiles);
             setAllForms(forms);
             setLastRefresh(new Date());
@@ -55,8 +92,13 @@ export default function AdminReportsPage() {
         }
 
         (async () => {
-            await fetchData();
-            setLoading(false);
+            try {
+                await fetchData();
+            } catch (err) {
+                console.error('Reports load error:', err);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [authLoading, isAdmin]);
 
@@ -268,6 +310,40 @@ export default function AdminReportsPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Diagnostic Panel (temporary) */}
+            {diagnosticData && (
+                <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+                    <button
+                        onClick={() => setShowDiagnostic(!showDiagnostic)}
+                        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-sand/10 transition-colors"
+                    >
+                        <span className="text-sm font-bold text-textLight">
+                            🔍 Diagnóstico de datos ({diagnosticData.formCount} formularios cargados de {diagnosticData.cadCount} CADs)
+                        </span>
+                        <span className="text-textLight text-xs">{showDiagnostic ? '▲ Ocultar' : '▼ Mostrar'}</span>
+                    </button>
+                    {showDiagnostic && (
+                        <div className="px-6 pb-4 space-y-1 text-xs font-mono">
+                            <div className="py-2 border-b border-border text-textLight">
+                                Emails con formulario en la BD: <span className="text-text font-bold">{diagnosticData.formEmails.join(', ')}</span>
+                            </div>
+                            {diagnosticData.cadDiag.map((c, i) => (
+                                <div key={i} className={`py-1.5 flex gap-2 ${c.hasForm ? 'text-forest' : 'text-red'}`}>
+                                    <span>{c.hasForm ? '✅' : '❌'}</span>
+                                    <span className="font-bold min-w-[160px]">{c.name}</span>
+                                    <span className="text-textLight">
+                                        {c.allEmails.length > 0
+                                            ? `emails: ${c.allEmails.join(', ')}`
+                                            : 'SIN EMAIL MAPEADO'}
+                                        {c.hasForm && ` → match: ${c.matchedEmail}`}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Detailed Progress Table */}
             <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
