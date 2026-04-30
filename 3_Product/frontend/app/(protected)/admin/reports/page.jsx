@@ -297,12 +297,12 @@ export default function AdminReportsPage() {
                                         <div className="text-xs text-textLight mt-0.5">{row.territorio || "—"}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {row.estado === "Inactivo" ? (
+                                        {(row.estado || "").toLowerCase() === "inactivo" || (row.estado || "").toLowerCase() === "inactive" ? (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red/10 text-red">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-red"></span>
                                                 Inactivo
                                             </span>
-                                        ) : row.estado === "Satélite" ? (
+                                        ) : (row.estado || "").toLowerCase() === "satélite" || (row.estado || "").toLowerCase() === "satelite" ? (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
                                                 Satélite

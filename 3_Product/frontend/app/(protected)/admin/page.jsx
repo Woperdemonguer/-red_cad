@@ -304,12 +304,12 @@ export default function AdminDashboard() {
                                         </td>
                                         <td className="px-6 py-4 text-text">{cad.territorio || "-"}</td>
                                         <td className="px-6 py-4">
-                                            {cad.estado === "Inactivo" ? (
+                                            {(cad.estado || "").toLowerCase() === "inactivo" || (cad.estado || "").toLowerCase() === "inactive" ? (
                                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red/10 text-red">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-red"></span>
                                                     Inactivo
                                                 </span>
-                                            ) : cad.estado === "Satélite" ? (
+                                            ) : (cad.estado || "").toLowerCase() === "satélite" || (cad.estado || "").toLowerCase() === "satelite" ? (
                                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
                                                     Satélite
@@ -317,7 +317,7 @@ export default function AdminDashboard() {
                                             ) : (
                                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sage/20 text-forest">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-forest"></span>
-                                                    {cad.estado || "Activo"}
+                                                    Activo
                                                 </span>
                                             )}
                                         </td>
