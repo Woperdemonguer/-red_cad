@@ -56,6 +56,8 @@ frontend/
 │   ├── page.jsx             Página raíz (redirige a /login)
 │   ├── globals.css          Tailwind base styles
 │   ├── login/page.jsx       Página de login (pública)
+│   ├── api/keep-alive/      Cron endpoint: ping a Supabase para evitar pause
+│   │   └── route.js            GET → consulta ligera a cad_profiles
 │   ├── (protected)/         Páginas protegidas (requieren auth)
 │   │   ├── layout.jsx          Wrapper: DashboardLayout + ErrorBoundary
 │   │   ├── dashboard/page.jsx  Vista general de la red
@@ -94,6 +96,7 @@ frontend/
 ├── __tests__/             ← Tests automatizados (Vitest)
 ├── public/                ← Archivos estáticos (favicon, imágenes)
 │
+├── vercel.json            ← Cron job config (keep-alive diario a las 06:00 UTC)
 ├── tailwind.config.js     ← Paleta de colores, fuentes y animaciones
 ├── vitest.config.js       ← Configuración de tests (jsdom, aliases)
 ├── jsconfig.json          ← Alias de importación (@/ → ./)
@@ -128,8 +131,11 @@ Definida en `tailwind.config.js`. Usar SIEMPRE nombres semánticos, nunca hex di
 | `NEXT_PUBLIC_SUPABASE_URL` | `utils/supabase.js` (cliente) | ✅ Sí |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `utils/supabase.js` (cliente) | ✅ Sí |
 | `SUPABASE_SERVICE_ROLE_KEY` | `app/actions/adminAuth.js` (servidor) | ❌ **NUNCA** |
+| `CRON_SECRET` | `app/api/keep-alive/route.js` (servidor) | ❌ **NUNCA** |
 
 > ⚠️ **CRÍTICO:** El `SUPABASE_SERVICE_ROLE_KEY` bypasea TODA la seguridad RLS. Si se filtra a código del cliente, cualquier usuario podría leer/escribir toda la base de datos. Solo se usa en Server Actions.
+
+> 💡 **CRON_SECRET:** Protege el endpoint `/api/keep-alive` contra llamadas externas no autorizadas. Vercel lo envía automáticamente en cada invocación del cron. Generar con: `openssl rand -base64 32`. Configurarlo en Vercel Dashboard → Settings → Environment Variables.
 
 ---
 

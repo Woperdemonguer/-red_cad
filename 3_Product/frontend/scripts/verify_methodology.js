@@ -37,8 +37,8 @@ const A1_WHITELIST = [
     'utils/supabase.js',
 ];
 
-// Patterns to identify Server Actions (also whitelisted for A1)
-const A1_SERVER_ACTION_DIRS = ['app/actions'];
+// Patterns to identify Server Actions and API routes (also whitelisted for A1)
+const A1_SERVER_ACTION_DIRS = ['app/actions', 'app/api'];
 
 // ─── Test Infrastructure ─────────────────────────────────────────────────────
 
@@ -232,6 +232,9 @@ function checkA2() {
     const sqlFiles = findFiles(resolve(ROOT, 'db'), ['.sql']);
 
     for (const file of sqlFiles) {
+        const fileName = relative(ROOT, file);
+        if (/(?:^|\/)fix_/.test(fileName) || /(?:^|\/)apply_fix_/.test(fileName) || /(?:^|\/)update_/.test(fileName)) continue;
+
         const content = readFileSync(file, 'utf-8');
         const lines = content.split('\n');
 

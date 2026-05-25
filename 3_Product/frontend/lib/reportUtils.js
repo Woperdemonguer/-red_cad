@@ -269,8 +269,8 @@ export function progressReportToCsv(reportRows) {
 
     const rows = reportRows.map(row => {
         const base = [
-            escapeCsvField(row.cadName), escapeCsvField(row.territorio),
-            escapeCsvField(row.estado), escapeCsvField(row.userEmail),
+            row.cadName, row.territorio,
+            row.estado, row.userEmail,
             row.progressPercent, row.answeredQuestions, row.totalQuestions,
             row.submittedAt ? 'Sí' : 'No',
             row.submittedAt ? new Date(row.submittedAt).toLocaleDateString('es-ES') : '',
@@ -477,17 +477,17 @@ export function answersToAggregatedCsv(cadsWithEmails, allForms) {
         const progress = calculateCadProgress(Object.keys(rawAnswers).length > 0 ? rawAnswers : null);
 
         const base = [
-            escapeCsvField(cad.nombre_comercial || '(sin nombre)'),
-            escapeCsvField(cad.territorio || ''),
-            escapeCsvField(cad.estado || 'Activo'),
-            escapeCsvField(email),
+            cad.nombre_comercial || '(sin nombre)',
+            cad.territorio || '',
+            cad.estado || 'Activo',
+            email,
             progress.progressPercent,
             submitted_at ? 'Sí' : 'No',
         ];
         questionCols.forEach(qc => {
-            base.push(escapeCsvField(serializeAnswer(formAnswers[qc.id])));
+            base.push(serializeAnswer(formAnswers[qc.id]));
         });
-        return base.join(',');
+        return base.map(v => escapeCsvField(v)).join(',');
     });
 
     return [headers.map(h => escapeCsvField(h)).join(','), ...rows].join('\n');
