@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, Suspense, useMemo } from "react";
-import { Save, CheckCircle2, Home, Info, HelpCircle } from "lucide-react";
+import { Save, CheckCircle2, Home, Info, HelpCircle, ClipboardCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
@@ -49,6 +49,7 @@ function FormComponent() {
   const [currentBlock, setCurrentBlock] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submittedAt, setSubmittedAt] = useState(null);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(null);
@@ -109,6 +110,7 @@ function FormComponent() {
           setAnswers(formAnswers);
           if (submitted_at) {
             setSubmitted(true);
+            setSubmittedAt(submitted_at);
           }
         }
       } catch (err) {
@@ -157,14 +159,16 @@ function FormComponent() {
 
   const handleFinalSubmit = async () => {
     // F1 fix: persist submitted_at timestamp
-    const toastId = toast.loading("Enviando formulario...");
-    const submittedAnswers = { ...answers, submitted_at: new Date().toISOString() };
+    const now = new Date().toISOString();
+    const toastId = toast.loading(submitted ? "Actualizando formulario..." : "Enviando formulario...");
+    const submittedAnswers = { ...answers, submitted_at: now };
     setSaving(true);
     try {
       await formService.save(targetEmail, submittedAnswers);
       setSubmitted(true);
+      setSubmittedAt(now);
       setHasUnsavedChanges(false);
-      toast.success("¡Formulario validado y enviado con éxito!", { id: toastId });
+      toast.success(submitted ? "¡Formulario actualizado con éxito!" : "¡Formulario validado y enviado con éxito!", { id: toastId });
     } catch (err) {
       toast.error("Error al enviar: " + err.message, { id: toastId });
     }
@@ -176,26 +180,10 @@ function FormComponent() {
     return shouldShowQuestion(question, blocks, answers);
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-[500px] p-10">
-          <div className="text-[64px] mb-6">🌿</div>
-          <h2 className="text-2xl text-text mb-4 font-bold">Formulario completado</h2>
-          <p className="text-[15px] text-warmGray leading-relaxed">
-            Gracias por dedicar este tiempo. Las respuestas ayudarán a construir una red más fuerte y mejor conectada.
-          </p>
-          <p className="text-[13px] text-textLight mt-6 italic">
-            "Hay que cuidar la red para que la red nos cuide"
-          </p>
-          {/* Nav fix: Add "Volver al inicio" button */}
-          <Link href="/dashboard" className="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-accent text-text font-bold rounded-xl hover:bg-accentHover transition-colors">
-            <Home size={18} /> Volver al inicio
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Format submission date for the banner
+  const formattedSubmitDate = submittedAt
+    ? new Date(submittedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+    : null;
 
   return (
     <div className="font-sans flex flex-col md:flex-row relative" style={{ minHeight: "calc(100vh - 64px)" }}>
@@ -261,6 +249,16 @@ function FormComponent() {
       {/* Main Content Area */}
       <div className="flex-1 w-full mx-auto pb-24 relative" style={{ maxWidth: 800 }}>
         <div className="px-[5%] py-10">
+          {/* Submitted banner */}
+          {submitted && (
+            <div className="mb-6 flex items-center gap-3 bg-sage/10 border border-sage/25 rounded-2xl px-5 py-3.5 animate-fade-in">
+              <ClipboardCheck size={18} className="text-sage flex-shrink-0" />
+              <p className="text-[13px] text-sage m-0 leading-relaxed">
+                <span className="font-semibold">Formulario enviado</span>{formattedSubmitDate ? ` el ${formattedSubmitDate}` : ""} — Puedes revisar y actualizar tus respuestas en cualquier momento.
+              </p>
+            </div>
+          )}
+
           {/* Block intro */}
           <div className="mb-10">
             <div className="flex items-center gap-3.5 mb-3">
@@ -396,7 +394,7 @@ function FormComponent() {
                 disabled={saving}
                 className="px-7 py-2.5 rounded-xl border-none bg-forest text-white text-sm font-bold cursor-pointer font-sans disabled:opacity-70"
               >
-                {saving ? "Enviando..." : "Enviar ✓"}
+                {saving ? (submitted ? "Actualizando..." : "Enviando...") : (submitted ? "Actualizar ✓" : "Enviar ✓")}
               </button>
             )}
           </div>
