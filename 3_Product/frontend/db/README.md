@@ -53,6 +53,15 @@
 |---------|----------|-------------------|
 | `supabase_profile_expansion.sql` | Añade columnas nuevas a `cad_profiles`: `estado`, `grupo_motor`, `perfiles_equipo`, `propiedad_instalaciones` | Cuando se necesiten nuevos campos en el perfil |
 
+### Migraciones de Email (Se ejecutan manualmente para cambiar emails de usuario)
+
+> ⚠️ **Cómo usarlas:** Copiar el script en el SQL Editor de Supabase y ejecutarlo. Actualiza `auth.users` (login) + todas las tablas relacionadas en una sola operación. Siempre incluyen queries de verificación al final.
+
+| Archivo | Migración | Fecha |
+|---------|-----------|-------|
+| `update_pem_email.sql` | `peremindona@gmail.com` → `horta.pem@gmail.com` (PEM) | 2026-05-25 |
+| `update_apaema_email.sql` | `apaema@gmail.com` → `info@apaema.net` (Apaema) | 2026-06-08 |
+
 ### Fixes (Se ejecutan para corregir problemas específicos)
 
 | Archivo | Qué corrige |
