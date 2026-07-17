@@ -471,13 +471,14 @@ function ProgressCell({ progress }) {
     }
 
     if (progress.submittedAt) {
+        const pct = progress.progressPercent || 0;
         return (
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 bg-sand rounded-full overflow-hidden max-w-[100px]">
-                        <div className="h-full bg-forest rounded-full" style={{ width: '100%' }} />
+                        <div className="h-full bg-forest rounded-full" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="text-xs font-bold text-forest whitespace-nowrap">100%</span>
+                    <span className="text-xs font-bold text-forest whitespace-nowrap">{pct}%</span>
                 </div>
                 <span className="inline-flex items-center gap-1 text-[11px] font-medium text-forest">
                     <CheckCircle2 size={12} /> Enviado
