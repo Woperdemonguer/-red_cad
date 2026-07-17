@@ -237,6 +237,33 @@ export const blocks = [
     ],
   },
 
+  // ─── BLOQUE 5b: INTERCAMBIOS DE PRODUCTO Y CONSUMO INTERNO ───
+  {
+    id: "5b",
+    title: "Intercambios de producto y consumo interno dentro de la Red",
+    icon: "🛒",
+    intro: "Este bloque se centra en identificar las posibilidades concretas de intercambio de producto entre los CAD de la Red: qué se puede ofrecer, qué se necesita, qué modalidades de cooperación interesan más y qué condiciones se consideran prioritarias para que los intercambios funcionen.",
+    questions: [
+      { id: "section_5b_1", type: "section", title: "Oferta disponible y necesidades de producto" },
+      { id: "5b.1", q: "Por favor, indica los productos que tu CAD ofrece actualmente o podría ofrecer de forma estable al resto de la Red.", type: "textarea", tooltip: "Respuesta abierta o listado de productos." },
+      { id: "5b.2", q: "De ese listado, ¿existen algunos productos que consideras especialmente estratégicos por su volumen disponible, excedentes, calidad, capacidad productiva o facilidad de suministro? Indica cuáles y por qué.", type: "textarea", tooltip: "Interesa conocer qué productos tienen mayor potencial para los intercambios entre CAD." },
+      { id: "5b.3", q: "¿Qué productos os interesa incorporar a vuestra oferta porque ya os los están demandando vuestros clientes actuales y tenéis dificultades para conseguirlos en vuestro territorio?", type: "textarea", tooltip: "Si es posible, indica también el canal de comercialización al que irían destinados (restauración colectiva, grupos de consumo, tiendas especializadas, distribución, etc.)." },
+
+      { id: "section_5b_2", type: "section", title: "Canales de comercialización y planificación conjunta" },
+      { id: "5b.4", q: "¿En qué canales de comercialización habéis identificado que una mayor cooperación entre los CAD a escala estatal podría aportar un mayor valor?", type: "textarea", tooltip: "Por ejemplo, restauración colectiva para complementar la oferta de fruta entre febrero y mayo, distribución especializada, grupos de consumo, venta online, etc. Explica brevemente el caso si lo consideras oportuno." },
+      { id: "5b.5", q: "¿Tienes identificado algún producto que te gustaría planificar conjuntamente con otro CAD para disponer de una producción más temprana, más tardía o prolongar su disponibilidad a lo largo del año?", type: "textarea", tooltip: "En caso afirmativo, indica qué producto(s), con qué CAD (si lo tienes identificado) y con qué objetivo." },
+      { id: "5b.6", q: "Pensando en reforzar la demanda que ya genera vuestro CAD, ¿habéis identificado productos que vuestros socios y socias necesitan (o podrían necesitar próximamente) para abastecer sus propios canales comerciales y que actualmente vuestro CAD no ofrece?", type: "textarea", tooltip: "En ese caso, vuestro CAD podría ejercer también una función de acopio para sus socios. Indica los productos si los tienes identificados." },
+
+      { id: "section_5b_3", type: "section", title: "Situación actual y modalidades de cooperación" },
+      { id: "5b.7", q: "¿Ya recibes o suministras productos a otros CAD de la Red?", type: "radio", options: ["Sí, recibimos productos", "Sí, suministramos productos", "Sí, ambas cosas", "No"], hasComment: true },
+      { id: "5b.8", q: "De partida, ¿qué modalidades de cooperación comercial consideras más interesantes para vuestro CAD?", type: "checkbox", tooltip: "Puedes marcar varias opciones.", options: ["Compra de productos entre CAD", "Venta de productos entre CAD", "Intercambio de excedentes", "Compras conjuntas", "Venta conjunta a clientes comunes", "Planificación conjunta de cultivos", "Especialización productiva entre territorios", "Compartir logística", "Compartir almacenamiento"], hasOther: true, hasComment: true },
+      { id: "5b.9", q: "¿Hay algún otro producto, oportunidad o necesidad relacionada con los intercambios entre CAD que no se haya recogido en las preguntas anteriores y que consideres importante compartir?", type: "textarea", optional: true },
+
+      { id: "section_5b_4", type: "section", title: "Priorización de aspectos clave para los intercambios" },
+      { id: "5b.10", q: "Por último, clasifica las siguientes cuestiones según el momento en el que consideras que deberían abordarse para impulsar los intercambios de producto entre los CAD.", type: "matrix", tooltip: "Asigna: 1 = Imprescindible desde el inicio. 2 = Importante, primer año de trabajo. 3 = Necesario, horizonte de hasta 2 años.", rows: ["Confianza entre los CAD", "Transparencia en la formación de precios", "Acuerdos claros sobre precios, márgenes y condiciones comerciales", "Planificación conjunta de la producción", "Información compartida sobre disponibilidad de producto", "Calendarios conjuntos de producción y campañas", "Compromisos estables de compra y venta entre CAD", "Garantías comunes de calidad y criterios compartidos", "Protocolos para la gestión de incidencias y devoluciones", "Coordinación logística y del transporte", "Disponibilidad de puntos de acopio territoriales", "Herramienta digital compartida para visualizar oferta y demanda", "Sistema ágil de comunicación entre los CAD", "Trazabilidad e intercambio de información sobre el origen de los productos", "Simplificación administrativa y de facturación", "Apoyo técnico para facilitar la coordinación entre organizaciones", "Especialización productiva y complementariedad entre territorios", "Otro (especificar)"], columns: ["1 Imprescindible desde el inicio", "2 Importante, primer año", "3 Necesario, horizonte 2 años"], hasComment: true },
+    ],
+  },
+
   // ─── BLOQUE 6: CALIDAD ───
   {
     id: 6,
